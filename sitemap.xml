@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>http://yoursite.com/2016/10/10/2016-10-10-hexo-blog/</loc>
+    
+    <lastmod>2017-10-20T13:45:39.912Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2017/10/13/2017-10-13-zaqar-design-doc/</loc>
+    
+    <lastmod>2017-10-20T11:43:19.864Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2017/10/12/2017-10-12-zaqar-unit-test/</loc>
+    
+    <lastmod>2017-10-20T08:40:24.130Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2014/10/12/2014-10-12-git-guide/</loc>
+    
+    <lastmod>2017-10-20T08:37:57.553Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/categories/index.html</loc>
+    
+    <lastmod>2017-10-11T17:31:08.871Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/tags/index.html</loc>
+    
+    <lastmod>2017-10-11T17:30:42.123Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/about/index.html</loc>
+    
+    <lastmod>2017-10-11T16:54:22.069Z</lastmod>
+    
+  </url>
+  
+</urlset>
