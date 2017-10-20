@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/404.html</loc>
+    
+    <lastmod>2017-10-20T14:24:08.415Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2016/10/10/2016-10-10-hexo-blog/</loc>
     
-    <lastmod>2017-10-20T13:45:39.912Z</lastmod>
+    <lastmod>2017-10-20T14:16:23.683Z</lastmod>
     
   </url>
   
