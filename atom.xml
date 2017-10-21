@@ -18,8 +18,8 @@
   
   <entry>
     <title>zaqar客户端操作（es）</title>
-    <link href="http://blog.aiven8.com/2017-10-13-zaqar-design-doc/"/>
-    <id>http://blog.aiven8.com/2017-10-13-zaqar-design-doc/</id>
+    <link href="http://blog.aiven8.com/blog/2017-10-13-zaqar-design-doc/"/>
+    <id>http://blog.aiven8.com/blog/2017-10-13-zaqar-design-doc/</id>
     <published>2017-10-13T02:53:59.000Z</published>
     <updated>2017-10-20T11:43:19.864Z</updated>
     
@@ -50,8 +50,8 @@
   
   <entry>
     <title>openstack开发中单元测试调试方法</title>
-    <link href="http://blog.aiven8.com/2017-10-12-zaqar-unit-test/"/>
-    <id>http://blog.aiven8.com/2017-10-12-zaqar-unit-test/</id>
+    <link href="http://blog.aiven8.com/blog/2017-10-12-zaqar-unit-test/"/>
+    <id>http://blog.aiven8.com/blog/2017-10-12-zaqar-unit-test/</id>
     <published>2017-10-12T02:53:59.000Z</published>
     <updated>2017-10-20T08:40:24.130Z</updated>
     
@@ -75,8 +75,8 @@
   
   <entry>
     <title>使用hexo搭建个人博客（转）</title>
-    <link href="http://blog.aiven8.com/2016-10-10-hexo-blog/"/>
-    <id>http://blog.aiven8.com/2016-10-10-hexo-blog/</id>
+    <link href="http://blog.aiven8.com/blog/2016-10-10-hexo-blog/"/>
+    <id>http://blog.aiven8.com/blog/2016-10-10-hexo-blog/</id>
     <published>2016-10-10T04:00:30.000Z</published>
     <updated>2017-10-20T14:16:23.683Z</updated>
     
@@ -102,8 +102,8 @@
   
   <entry>
     <title>Git操作手册|命令速查表（转）</title>
-    <link href="http://blog.aiven8.com/2014-10-12-git-guide/"/>
-    <id>http://blog.aiven8.com/2014-10-12-git-guide/</id>
+    <link href="http://blog.aiven8.com/blog/2014-10-12-git-guide/"/>
+    <id>http://blog.aiven8.com/blog/2014-10-12-git-guide/</id>
     <published>2014-10-11T17:53:59.000Z</published>
     <updated>2017-10-20T08:37:57.553Z</updated>
     
