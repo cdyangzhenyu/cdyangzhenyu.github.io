@@ -4,12 +4,12 @@
 
     
   <url>
-    <loc>http://blog.aiven8.com/blog/2017-10-25-zaqar-version-define/</loc>
-    <lastmod>2017-10-26T05:48:40.972Z</lastmod>
+    <loc>http://blog.aiven8.com/blog/2017-10-25-zaqar-dockerfile/</loc>
+    <lastmod>2017-10-26T06:36:14.909Z</lastmod>
     <data>
         <display>
-        <title>自定义zaqar版本打包规则</title>
-        <pubTime>2017-10-25T04:53:59.000Z</pubTime>
+        <title>Zaqar docker镜像制作</title>
+        <pubTime>2017-10-25T05:53:59.000Z</pubTime>
         
         <tag>Openstack</tag>
          
@@ -26,12 +26,12 @@
 
     
   <url>
-    <loc>http://blog.aiven8.com/blog/2017-10-25-zaqar-dockerfile/</loc>
-    <lastmod>2017-10-26T05:47:16.773Z</lastmod>
+    <loc>http://blog.aiven8.com/blog/2017-10-25-zaqar-version-define/</loc>
+    <lastmod>2017-10-26T05:48:40.972Z</lastmod>
     <data>
         <display>
-        <title>Zaqar docker镜像制作</title>
-        <pubTime>2017-10-25T05:53:59.000Z</pubTime>
+        <title>自定义zaqar版本打包规则</title>
+        <pubTime>2017-10-25T04:53:59.000Z</pubTime>
         
         <tag>Openstack</tag>
          
