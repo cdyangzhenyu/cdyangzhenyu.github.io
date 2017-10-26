@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.aiven8.com/blog/2017-10-25-zaqar-version-define/</loc>
+    
+    <lastmod>2017-10-26T05:48:40.972Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.aiven8.com/blog/2017-10-25-zaqar-dockerfile/</loc>
+    
+    <lastmod>2017-10-26T05:47:16.773Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.aiven8.com/googleb4eb19229986e995.html</loc>
     
     <lastmod>2017-10-21T15:33:52.969Z</lastmod>
