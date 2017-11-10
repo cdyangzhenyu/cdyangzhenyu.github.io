@@ -1,726 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<search> 
-  
-    
-    <entry>
-      <title><![CDATA[Zaqar docker镜像制作]]></title>
-      <url>/blog/2017-10-25-zaqar-dockerfile/</url>
-      <content type="html"><![CDATA[<h2 id="docker镜像制作"><a href="#docker镜像制作" class="headerlink" title="docker镜像制作"></a>docker镜像制作</h2><p>本文中zaqar采用docker进行部署，在部署之前需要制作docker镜像，基于centos7基础镜像制作。<br>制作前准备：<br>安装docker<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install docker</div></pre></td></tr></table></figure></p>
-<p>拉取centos7镜像：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker pull docker.io/centos</div></pre></td></tr></table></figure></p>
-<a id="more"></a>
-<p>为了避免制作的docker镜像过大，这里直接采用dockerfile进行制作，Dockerfile内容如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"># zaqar dockerfile</div><div class="line">FROM docker.io/centos</div><div class="line">MAINTAINER yangzhenyu</div><div class="line"></div><div class="line">RUN echo &quot;==&gt; Init zaqar user and group...&quot;                                   &amp;&amp; \</div><div class="line">    useradd -d /var/lib/zaqar -s /sbin/nologin zaqar                          &amp;&amp; \</div><div class="line">    groupmod -g 971 zaqar                                                     &amp;&amp; \</div><div class="line">    usermod -u 971 zaqar                                                      &amp;&amp; \</div><div class="line">    chown -R zaqar.zaqar /var/lib/zaqar                                       &amp;&amp; \</div><div class="line">    mkdir /etc/zaqar                                                          &amp;&amp; \</div><div class="line">    mkdir /var/log/zaqar                                                      &amp;&amp; \</div><div class="line">    chgrp zaqar /etc/zaqar                                                    &amp;&amp; \</div><div class="line">    chown zaqar /var/log/zaqar                                                &amp;&amp; \</div><div class="line">    echo &quot;==&gt; Install dependence package...&quot;                                  &amp;&amp; \</div><div class="line">    yum install -y epel-release gcc python-devel git                          &amp;&amp; \</div><div class="line">    yum install -y python-pip                                                 &amp;&amp; \</div><div class="line">    pip install --upgrade pymongo gevent uwsgi                                &amp;&amp; \</div><div class="line">    echo &quot;==&gt; Install zaqar package...&quot;                                       &amp;&amp; \</div><div class="line">    mkdir /zaqar                                                              &amp;&amp; \</div><div class="line">    cd /zaqar                                                                 &amp;&amp; \</div><div class="line">    git clone https://github.com/openstack/python-openstackclient.git         &amp;&amp; \</div><div class="line">    cd /zaqar/python-openstackclient                                          &amp;&amp; \</div><div class="line">    git checkout stable/pike                                                  &amp;&amp; \</div><div class="line">    pip install .                                                             &amp;&amp; \</div><div class="line">    cd /zaqar                                                                 &amp;&amp; \</div><div class="line">    git clone https://github.com/eayunstack/python-zaqarclient.git            &amp;&amp; \</div><div class="line">    cd /zaqar/python-zaqarclient                                              &amp;&amp; \</div><div class="line">    git checkout devel                                                        &amp;&amp; \</div><div class="line">    pip install .                                                             &amp;&amp; \</div><div class="line">    cd /zaqar                                                                 &amp;&amp; \</div><div class="line">    git clone https://github.com/eayunstack/zaqar.git                         &amp;&amp; \</div><div class="line">    cd /zaqar/zaqar                                                           &amp;&amp; \</div><div class="line">    git checkout devel                                                        &amp;&amp; \</div><div class="line">    pip install .                                                             &amp;&amp; \</div><div class="line">    echo &quot;==&gt; Clean packages...&quot;                                              &amp;&amp; \</div><div class="line">    yum remove -y epel-release  python-pip                                    &amp;&amp; \</div><div class="line">    yum remove -y gcc python-devel git                                        &amp;&amp; \</div><div class="line">    yum clean all                                                             &amp;&amp; \</div><div class="line">    rm -rf /var/cache/yum/*                                                   &amp;&amp; \</div><div class="line">    mkdir /etc/yum.repos.d/repo                                               &amp;&amp; \</div><div class="line">    mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo/                         &amp;&amp; \</div><div class="line">    rm -rf  /zaqar                                                            &amp;&amp; \</div><div class="line">    echo &quot;==&gt; Deploy zaqar success...&quot;</div><div class="line"></div><div class="line">USER zaqar</div><div class="line">CMD [&quot;/usr/bin/uwsgi&quot;, &quot;--ini&quot;, &quot;/etc/zaqar/uwsgi.conf&quot;]</div></pre></td></tr></table></figure></p>
-<blockquote>
-<p>只使用1个RUN不会产生过多的中间过程，因为docker每一个命令都会生成一个中间层，这样也就避免了镜像过大的问题。</p>
-</blockquote>
-<h2 id="build镜像"><a href="#build镜像" class="headerlink" title="build镜像"></a>build镜像</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker build -t eayunstack/zaqar-base .</div></pre></td></tr></table></figure>
-<h2 id="导出镜像"><a href="#导出镜像" class="headerlink" title="导出镜像"></a>导出镜像</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker save --output eayunstack_zaqar_base.latest.171025 eayunstack/zaqar-base</div></pre></td></tr></table></figure>
-<p>目前部署采用ansible进行，请注意导出的镜像文件名的格式。</p>
-<p>ansible目录下执行:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ansible-playbook -vvv site.yml 2&gt;&amp;1 |tee site.log</div></pre></td></tr></table></figure>
-]]></content>
-      
-        <categories>
-            
-            <category> Zaqar </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> Openstack </tag>
-            
-            <tag> Zaqar </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[自定义zaqar版本打包规则]]></title>
-      <url>/blog/2017-10-25-zaqar-version-define/</url>
-      <content type="html"><![CDATA[<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>本文版本中的zaqar是基于社区ocata（版本号4.0.0）进行二次开发的，zaqarclient基于社区pike（版本号1.4.0）。<br>部署采用docker的部署方式。对于zaqar安装基于pip的源码安装方式，版本管理采用pbr+git tag.<br><a id="more"></a></p>
-<h2 id="版本定义说明"><a href="#版本定义说明" class="headerlink" title="版本定义说明"></a>版本定义说明</h2><p>zaqar第一次发版版本号定义为4.1.0：</p>
-<ul>
-<li>第一位4对应社区大版本ocata，社区大版本这一位都是直接+1，以后更新社区新版本也遵循这一规则。</li>
-<li>第二位1为eayun大版本，每一次大版本升级都需要更新该版本号+1。</li>
-<li>第三位0为小版本，每次修复bug需要迭代更新时+1。</li>
-</ul>
-<p>zaqarclient第一次发版版本号定义为1.4.1：</p>
-<ul>
-<li>client只需要更新第三位，每次升级都+1</li>
-</ul>
-<h2 id="git-tag"><a href="#git-tag" class="headerlink" title="git tag"></a>git tag</h2><p>zaqar代码提测制作docker镜像前，需要对devel分支打tag：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git checkout devel</div><div class="line">git tag -a 4.1.0</div></pre></td></tr></table></figure>
-<p>输入以下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">zaqar 4.1.0 release</div><div class="line"></div><div class="line">meta:version: 4.1.0</div><div class="line">meta:diff-start: 4.0.0</div><div class="line">meta:series: ocata</div><div class="line">meta:release-type: release</div><div class="line">meta:pypi: no</div><div class="line">meta:first: yes</div><div class="line">meta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt;</div><div class="line">meta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt;</div></pre></td></tr></table></figure></p>
-<h2 id="上传远程仓库"><a href="#上传远程仓库" class="headerlink" title="上传远程仓库"></a>上传远程仓库</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push origin 4.1.0</div></pre></td></tr></table></figure>
-<p>zaqarclient打tag：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git checkout devel</div><div class="line">git tag -a 1.4.1</div></pre></td></tr></table></figure>
-<p>输入以下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">zaqar 1.4.1 release</div><div class="line"></div><div class="line">meta:version: 1.4.1</div><div class="line">meta:diff-start: 1.4.0</div><div class="line">meta:series: pike</div><div class="line">meta:release-type: release</div><div class="line">meta:pypi: no</div><div class="line">meta:first: yes</div><div class="line">meta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt;</div><div class="line">meta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt;</div></pre></td></tr></table></figure></p>
-<p>上传远程仓库<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push origin 1.4.1</div></pre></td></tr></table></figure></p>
-<p>如果需要删除tag：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git tag -d TAG</div><div class="line">git push origin :refs/tags/TAG</div></pre></td></tr></table></figure></p>
-<h2 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h2><p>直接使用pip安装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@node-145 zaqar]# git clone https://github.com/eayunstack/zaqar.git</div><div class="line">[root@node-145 zaqar]# git checkout dev</div><div class="line">[root@node-145 zaqar]# cd zaqar</div><div class="line">[root@node-145 zaqar]# pip install .</div></pre></td></tr></table></figure></p>
-<p>查看zaqar的安装版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[root@node-145 zaqar]# pip list | grep zaqar</div><div class="line">python-zaqarclient (1.4.1)</div><div class="line">zaqar (4.1.0)</div></pre></td></tr></table></figure></p>
-]]></content>
-      
-        <categories>
-            
-            <category> Zaqar </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> Openstack </tag>
-            
-            <tag> Zaqar </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[zaqar客户端操作（es）]]></title>
-      <url>/blog/2017-10-13-zaqar-design-doc/</url>
-      <content type="html"><![CDATA[<h2 id="1-说明"><a href="#1-说明" class="headerlink" title="1. 说明"></a>1. 说明</h2><p>本文描述了消息服务客户端操作，目前客户端命令全部带有<code>es</code>标签，由于需求对<code>zaqar</code>的改动较大，在不大范围修改原有<code>client</code>的代码前提下，独立出新的的命令行模块。</p>
-<h2 id="2-功能模块简述"><a href="#2-功能模块简述" class="headerlink" title="2. 功能模块简述"></a>2. 功能模块简述</h2><p>目前消息服务的客户端主要包括以下几大功能模块：</p>
-<ul>
-<li>队列管理</li>
-<li>主题管理</li>
-<li>订阅管理</li>
-<li>消息管理</li>
-</ul>
-<p>所有客户端操作命令如下：<br><a id="more"></a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack -h | grep es-</div><div class="line">                 [--os-queues-api-version &lt;queues-api-version&gt;]</div><div class="line">  --os-queues-api-version &lt;queues-api-version&gt;</div><div class="line">  es-messaging message-consume  Consume messages and return a list of consume messages (python-zaqarclient)</div><div class="line">  es-messaging message-delete  Delete consume messages (python-zaqarclient)</div><div class="line">  es-messaging message-list  List all messages for a given queue (python-zaqarclient)</div><div class="line">  es-messaging message-post  Post messages for a given queue (python-zaqarclient)</div><div class="line">  es-messaging message-publish  Publish messages for a given topic (python-zaqarclient)</div><div class="line">  es-messaging queue-create  Create a queue (python-zaqarclient)</div><div class="line">  es-messaging queue-delete  Delete a queue (python-zaqarclient)</div><div class="line">  es-messaging queue-list  List available queues (python-zaqarclient)</div><div class="line">  es-messaging queue-purge  Purge a queue (python-zaqarclient)</div><div class="line">  es-messaging queue-show  Get queue monitor (python-zaqarclient)</div><div class="line">  es-messaging queue-update  Set queue metadata (python-zaqarclient)</div><div class="line">  es-messaging subscription-create  Create a subscription for topic (python-zaqarclient)</div><div class="line">  es-messaging subscription-delete  Delete a subscription (python-zaqarclient)</div><div class="line">  es-messaging subscription-list  List available subscriptions (python-zaqarclient)</div><div class="line">  es-messaging subscription-show  Display subscription details (python-zaqarclient)</div><div class="line">  es-messaging subscription-update  Update a subscription (python-zaqarclient)</div><div class="line">  es-messaging topic-create  Create a topic (python-zaqarclient)</div><div class="line">  es-messaging topic-delete  Delete a topic (python-zaqarclient)</div><div class="line">  es-messaging topic-list  List available topics (python-zaqarclient)</div><div class="line">  es-messaging topic-show  Get topic monitor (python-zaqarclient)</div><div class="line">  es-messaging topic-update  Set topic metadata (python-zaqarclient)</div></pre></td></tr></table></figure></p>
-<h2 id="3-命令操作"><a href="#3-命令操作" class="headerlink" title="3.命令操作"></a>3.命令操作</h2><h3 id="3-1-队列管理"><a href="#3-1-队列管理" class="headerlink" title="3.1 队列管理"></a>3.1 队列管理</h3><p>队列管理主要是针对消息服务中队列资源的生命周期管理，主要功能包括：队列的创建，队列删除，队列查询，队列清空，队列修改，队列监控。</p>
-<ul>
-<li>队列创建</li>
-</ul>
-<p>队列创建需要传递的参数主要是队列的名称，名称必须是项目里唯一，否则不会创建新的队列。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging queue-create &#123;queue_name&#125;</div></pre></td></tr></table></figure>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-create test</div><div class="line">+-------+-------+</div><div class="line">| Field | Value |</div><div class="line">+-------+-------+</div><div class="line">| Name  | test  |</div><div class="line">+-------+-------+</div></pre></td></tr></table></figure>
-<ul>
-<li>队列更新</li>
-</ul>
-<p>根据队列的名称更新队列的元数据，可更新的内容包括，最大长度，生命周期，独占时间，延迟时间。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging queue-update &#123;queue_name&#125; &#123;queue_metadata&#125;</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>queue_metadata</code>: 元数据字典，可选。<br><code>_max_messages_post_size</code>：最大长度，可选。<br><code>_default_message_ttl</code>：生命周期，可选。<br><code>claim_ttl</code>：独占时间，可选。<br><code>delay_ttl</code>：延迟时间，可选。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-update test &apos;&#123;&quot;_max_messages_post_size&quot;: 233333&#125;&apos;</div></pre></td></tr></table></figure>
-<ul>
-<li>队列列表</li>
-</ul>
-<p>查询队列的列表。支持<code>detail</code>参数，表明获取详细列表。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging queue-list --detail</div></pre></td></tr></table></figure>
-<p>输出说明：</p>
-<blockquote>
-<p><code>Name</code>: 队列名称。<br><code>Metadata_Dict</code>：队列的元数据字典，包括生命周期，最大长度，延迟时间，独占时间。<br><code>Href</code>：资源链接，暂时无意义。<br><code>Created_at</code>：队列创建时间，utc时间。<br><code>Updated_at</code>：队列的更新时间，utc时间，初始化和创建时间相同。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-list</div><div class="line">+-------------+</div><div class="line">| Name        |</div><div class="line">+-------------+</div><div class="line">| test        |</div><div class="line">| test_queues |</div><div class="line">+-------------+</div><div class="line"></div><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-list --detail</div><div class="line">+-------------+---------------------------------------------------------------------------------------------------------+------------------------+----------------------+----------------------+</div><div class="line">| Name        | Metadata_Dict                                                                                           | Href                   | Created_at           | Updated_at           |</div><div class="line">+-------------+---------------------------------------------------------------------------------------------------------+------------------------+----------------------+----------------------+</div><div class="line">| test        | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;claim_ttl&apos;: 30, u&apos;delay_ttl&apos;: 0, u&apos;_default_message_ttl&apos;: 345600&#125; | /v2/queues/test        | 2017-10-16T03:32:49Z | 2017-10-16T03:32:49Z |</div><div class="line">| test_queues | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;claim_ttl&apos;: 30, u&apos;delay_ttl&apos;: 0, u&apos;_default_message_ttl&apos;: 345600&#125; | /v2/queues/test_queues | 2017-10-16T03:32:54Z | 2017-10-16T03:32:54Z |</div><div class="line">+-------------+---------------------------------------------------------------------------------------------------------+------------------------+----------------------+----------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>队列查询</li>
-</ul>
-<p>根据队列的名字查询队列的详细信息。该操作输出包括队列的监控信息。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging queue-show &#123;queue_name&#125;</div></pre></td></tr></table></figure>
-<p>输出说明：</p>
-<blockquote>
-<p><code>Name</code>: 队列名称。<br><code>Metadata_Dict</code>： 队列的元数据字典，包括生命周期，最大长度，延迟时间，独占时间。<br><code>msg_counts</code>： 非批量发送消息个数。<br><code>msg_bytes</code>： 非批量发送消息的大小。<br><code>bulk_msg_counts</code>：批量发送消息的个数。<br><code>bulk_msg_bytes</code>： 批量发送消息的大小。<br><code>consume_msg_counts</code>： 消费消息的个数。<br><code>consume_msg_bytes</code>： 消费消息的大小。<br><code>active_msgs</code>： 活动消息个数。<br><code>inactive_msgs</code>：非活动消息个数，指消费冷却时间中。<br><code>delayed_msgs</code>： 处于延迟状态消息的个数。<br><code>deleted_msgs</code>： 已删除的消息的个数。<br><code>Created_at</code>： 队列创建时间。<br><code>Updated_at</code>： 队列更新时间。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-show test</div><div class="line">+--------------------+---------------------------------------------------------------------------------------------------------+</div><div class="line">| Field              | Value                                                                                                   |</div><div class="line">+--------------------+---------------------------------------------------------------------------------------------------------+</div><div class="line">| Name               | test                                                                                                    |</div><div class="line">| Metadata           | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;claim_ttl&apos;: 30, u&apos;delay_ttl&apos;: 0, u&apos;_default_message_ttl&apos;: 345600&#125; |</div><div class="line">| msg_counts         | 0                                                                                                       |</div><div class="line">| msg_bytes          | 0.0                                                                                                     |</div><div class="line">| bulk_msg_counts    | 0                                                                                                       |</div><div class="line">| bulk_msg_bytes     | 0.0                                                                                                     |</div><div class="line">| consume_msg_counts | 0                                                                                                       |</div><div class="line">| consume_msg_bytes  | 0.0                                                                                                     |</div><div class="line">| active_msgs        | 0                                                                                                       |</div><div class="line">| inactive_msgs      | 0                                                                                                       |</div><div class="line">| delayed_msgs       | 0                                                                                                       |</div><div class="line">| deleted_msgs       | 0                                                                                                       |</div><div class="line">| Created_at         | 2017-10-16T03:32:49Z                                                                                    |</div><div class="line">| Updated_at         | 2017-10-16T03:32:49Z                                                                                    |</div><div class="line">+--------------------+---------------------------------------------------------------------------------------------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>队列清空</li>
-</ul>
-<p>根据队列的名称清空队列里所有消息。命令为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging queue-purge &#123;queue_name&#125;</div></pre></td></tr></table></figure></p>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-purge test</div></pre></td></tr></table></figure>
-<ul>
-<li>队列删除</li>
-</ul>
-<p>根据队列名称删除队列，删除不存在的队列名也不会报错。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging queue-delete &#123;queue_name&#125;</div></pre></td></tr></table></figure>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-delete test</div></pre></td></tr></table></figure>
-<h3 id="3-2-主题管理"><a href="#3-2-主题管理" class="headerlink" title="3.2 主题管理"></a>3.2 主题管理</h3><p>主题管理主要是针对消息服务中主题资源的生命周期管理，主要功能包括：主题创建，主题删除，主题查询，主题修改，主题监控。</p>
-<ul>
-<li>主题创建</li>
-</ul>
-<p>主题创建需要传递的参数主要是主题的名称，名称必须是项目里唯一，否则不会创建新的主题。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging topic-create &#123;topic_name&#125;</div></pre></td></tr></table></figure>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-create test</div><div class="line">+-------+-------+</div><div class="line">| Field | Value |</div><div class="line">+-------+-------+</div><div class="line">| Name  | test  |</div><div class="line">+-------+-------+</div></pre></td></tr></table></figure>
-<ul>
-<li>主题更新</li>
-</ul>
-<p>根据主题的名称更新主题的元数据，可更新的内容包括，最大长度，生命周期。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging topic-update &#123;topic_name&#125; &#123;topic_metadata&#125;</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>topic_metadata</code>: 元数据字典，可选。<br><code>_max_messages_post_size</code>：最大长度，可选。<br><code>_default_message_ttl</code>：生命周期，可选。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-update test &apos;&#123;&quot;_max_messages_post_size&quot;: 233333&#125;&apos;</div></pre></td></tr></table></figure>
-<ul>
-<li>主题列表</li>
-</ul>
-<p>查询主题的列表。支持<code>detail</code>参数，表明获取详细列表。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging topic-list --detail</div></pre></td></tr></table></figure>
-<p>输出说明：</p>
-<blockquote>
-<p><code>Name</code>: 主题名称。<br><code>Metadata_Dict</code>：主题的元数据字典，包括生命周期，最大长度。<br><code>Href</code>：资源链接，暂时无意义。<br><code>Created_at</code>：主题创建时间，utc时间。<br><code>Updated_at</code>：主题的更新时间，utc时间，初始化和创建时间相同。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-list</div><div class="line">+-------+</div><div class="line">| Name  |</div><div class="line">+-------+</div><div class="line">| test  |</div><div class="line">| test1 |</div><div class="line">+-------+</div><div class="line"></div><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-list --detail</div><div class="line">+-------+---------------------------------------------------------------------+------------------+----------------------+----------------------+</div><div class="line">| Name  | Metadata_Dict                                                       | Href             | Created_at           | Updated_at           |</div><div class="line">+-------+---------------------------------------------------------------------+------------------+----------------------+----------------------+</div><div class="line">| test  | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;_default_message_ttl&apos;: 86400&#125; | /v2/topics/test  | 2017-10-13T08:00:49Z | 2017-10-13T08:00:49Z |</div><div class="line">| test1 | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;_default_message_ttl&apos;: 86400&#125; | /v2/topics/test1 | 2017-10-16T04:15:21Z | 2017-10-16T04:15:21Z |</div><div class="line">+-------+---------------------------------------------------------------------+------------------+----------------------+----------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>主题查询</li>
-</ul>
-<p>根据主题的名字查询主题的详细信息。该操作输出包括主题的监控信息。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging topic-show &#123;topic_name&#125;</div></pre></td></tr></table></figure>
-<p>输出说明：</p>
-<blockquote>
-<p><code>Name</code>: 主题名称。<br><code>Metadata_Dict</code>：主题的元数据字典，包括生命周期，最大长度。<br><code>msg_counts</code>：非批量发布消息个数。<br><code>msg_bytes</code>：非批量发布消息的大小。<br><code>bulk_msg_counts</code>：批量发布消息的个数。<br><code>bulk_msg_bytes</code>：批量发布消息的大小。<br><code>sub_msg_counts</code>： 成功发送订阅终端消息的个数。<br><code>sub_msg_bytes</code>：成功发送订阅终端消息的大小。<br><code>total_sub_msg_counts</code>： 总的发送订阅终端消息个数，包括失败的。<br><code>total_sub_msg_bytes</code>： 总的发送订阅终端消息的大小，包括失败的。<br><code>Created_at</code>： 主题创建时间。<br><code>Updated_at</code>： 主题更新时间。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-show test</div><div class="line">+----------------------+----------------------------------------------------------------------+</div><div class="line">| Field                | Value                                                                |</div><div class="line">+----------------------+----------------------------------------------------------------------+</div><div class="line">| Name                 | test                                                                 |</div><div class="line">| Metadata             | &#123;u&apos;_max_messages_post_size&apos;: 233333, u&apos;_default_message_ttl&apos;: 86400&#125; |</div><div class="line">| msg_counts           | 0                                                                    |</div><div class="line">| msg_bytes            | 0.0                                                                  |</div><div class="line">| bulk_msg_counts      | 0                                                                    |</div><div class="line">| bulk_msg_bytes       | 0.0                                                                  |</div><div class="line">| sub_msg_counts       | 0                                                                    |</div><div class="line">| sub_msg_bytes        | 0.0                                                                  |</div><div class="line">| total_sub_msg_counts | 0                                                                    |</div><div class="line">| total_sub_msg_bytes  | 0.0                                                                  |</div><div class="line">| Created_at           | 2017-10-13T08:00:49Z                                                 |</div><div class="line">| Updated_at           | 2017-10-16T04:16:54Z                                                 |</div><div class="line">+----------------------+----------------------------------------------------------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>主题删除</li>
-</ul>
-<p>根据主题名称删除主题，删除不存在的主题名也不会报错。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging topic-delete &#123;topic_name&#125;</div></pre></td></tr></table></figure>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-delete test</div></pre></td></tr></table></figure>
-<h3 id="3-3-订阅管理"><a href="#3-3-订阅管理" class="headerlink" title="3.3 订阅管理"></a>3.3 订阅管理</h3><p>订阅管理主要是消息服务中对主题的订阅进行管理，主题被订阅后，发到主题的消息会根据订阅的终端进行分发，目前终端支持<code>webhook</code>和<code>queue</code>两种类型。</p>
-<ul>
-<li>订阅创建</li>
-</ul>
-<p>主题的订阅创建需要传递的参数主要是主题的名称，订阅终端，及<code>options</code>可选项。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging subscription-create &#123;topic_name&#125; &#123;subscriber&#125; --options</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>subscriber</code>: 订阅终端<code>webhook：http://test.test.com</code>，该调用方法为<code>POST</code>，<code>body</code>为消息体。<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;订阅终端<code>queue：queue:{queue_name}</code>，将消息直接转存到该<code>queue</code>中，元数据与<code>queue</code>相同，必选。<br><code>options</code>：订阅的元数据选项，该参数可以不选。如果不选默认<code>push_policy=EXPONENTIAL_DECAY_RETRY</code>。<br><code>push_policy</code>: 订阅的重试策略，在将消息发送给订阅终端的时候如果发送失败会进行重试，具体策略规则见设计文档，可选。<br><code>tags</code>：订阅的过滤标签，标签支持多个，目前没有限制，过滤规则见设计文档，可选。</p>
-</blockquote>
-<p>举例说明：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-create test http://test.test.com</div><div class="line">+------------+----------------------------------------------+</div><div class="line">| Field      | Value                                        |</div><div class="line">+------------+----------------------------------------------+</div><div class="line">| ID         | 59e4562424ed673f607dceb7                     |</div><div class="line">| Subscriber | http://test.test.com                         |</div><div class="line">| Options    | &#123;u&apos;push_policy&apos;: u&apos;EXPONENTIAL_DECAY_RETRY&apos;&#125; |</div><div class="line">+------------+----------------------------------------------+</div><div class="line"></div><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-create test queue:test --options &apos;&#123;&quot;push_policy&quot; : &quot;BACKOFF_RETRY&quot;, &quot;tags&quot; : [ &quot;test&quot;, &quot;test2&quot; ]&#125;&apos;</div><div class="line">+------------+------------------------------------------------------------------+</div><div class="line">| Field      | Value                                                            |</div><div class="line">+------------+------------------------------------------------------------------+</div><div class="line">| ID         | 59e44e0024ed673f277dcec3                                         |</div><div class="line">| Subscriber | queue:test                                                       |</div><div class="line">| Options    | &#123;u&apos;push_policy&apos;: u&apos;BACKOFF_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |</div><div class="line">+------------+------------------------------------------------------------------+</div></pre></td></tr></table></figure></p>
-<ul>
-<li>订阅更新</li>
-</ul>
-<p>根据订阅的ID更新订阅的属性，目前可更新的属性有重试策略和标签。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging subscription-update &#123;topic_name&#125; &#123;subscription_id&#125; --options &#123;options&#125;</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>topic_name</code>: 主题名称，必选。<br><code>subscription_id</code>：订阅<code>id</code>，必选。<br><code>options</code>: 需要修改的属性，可选。<br><code>push_policy</code>: 订阅的重试策略，在将消息发送给订阅终端的时候如果发送失败会进行重试，具体策略规则见设计文档，可选。<br><code>tags</code>：订阅的过滤标签，标签支持多个，目前没有限制，过滤规则见设计文档，可选。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-update test 59e4562424ed673f607dceb7 --options &apos;&#123;&quot;push_policy&quot; : &quot;EXPONENTIAL_DECAY_RETRY&quot;, &quot;tags&quot; : [ &quot;test&quot;, &quot;test2&quot; ]&#125;&apos; </div><div class="line">+---------+----------------------------------------------------------------------------+</div><div class="line">| Field   | Value                                                                      |</div><div class="line">+---------+----------------------------------------------------------------------------+</div><div class="line">| ID      | 59e4562424ed673f607dceb7                                                   |</div><div class="line">| Options | &#123;u&apos;push_policy&apos;: u&apos;EXPONENTIAL_DECAY_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |</div><div class="line">+---------+----------------------------------------------------------------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>订阅列表</li>
-</ul>
-<p>查询主题订阅的列表。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging subscription-list &#123;topic_name&#125;</div></pre></td></tr></table></figure>
-<p>输出说明：</p>
-<blockquote>
-<p><code>ID</code>: 订阅<code>ID</code>。<br><code>Subscriber</code>：订阅终端。<br><code>Confirmed</code>：订阅确认，目前暂不提供，默认不确认。<br><code>Options</code>：订阅属性。<br><code>push_policy</code>: 订阅的重试策略。<br><code>tags</code>：订阅的过滤标签，标签支持多个。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-list test</div><div class="line">+--------------------------+----------------------+-----------+----------------------------------------------------------------------------+</div><div class="line">| ID                       | Subscriber           | Confirmed | Options                                                                    |</div><div class="line">+--------------------------+----------------------+-----------+----------------------------------------------------------------------------+</div><div class="line">| 59e44e0024ed673f277dcec3 | queue:test           | False     | &#123;u&apos;push_policy&apos;: u&apos;BACKOFF_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125;           |</div><div class="line">| 59e4562424ed673f607dceb7 | http://test.test.com | False     | &#123;u&apos;push_policy&apos;: u&apos;EXPONENTIAL_DECAY_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |</div><div class="line">+--------------------------+----------------------+-----------+----------------------------------------------------------------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>订阅查询</li>
-</ul>
-<p>根据主题的名字及订阅<code>id</code>查询主题订阅的的信息。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging subscription-show &#123;topic_name&#125; &#123;subscription_id&#125;</div></pre></td></tr></table></figure>
-<p>输出说明：</p>
-<blockquote>
-<p><code>ID</code>: 订阅<code>ID</code>。<br><code>Subscriber</code>：订阅终端。<br><code>Confirmed</code>：订阅确认，目前暂不提供，默认不确认。<br><code>Options</code>：订阅属性。<br><code>push_policy</code>: 订阅的重试策略。<br><code>tags</code>：订阅的过滤标签，标签支持多个。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-show test 59e44e0024ed673f277dcec3</div><div class="line">+------------+------------------------------------------------------------------+</div><div class="line">| Field      | Value                                                            |</div><div class="line">+------------+------------------------------------------------------------------+</div><div class="line">| ID         | 59e44e0024ed673f277dcec3                                         |</div><div class="line">| Subscriber | queue:test                                                       |</div><div class="line">| Confirmed  | False                                                            |</div><div class="line">| Options    | &#123;u&apos;push_policy&apos;: u&apos;BACKOFF_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |</div><div class="line">+------------+------------------------------------------------------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>订阅删除</li>
-</ul>
-<p>根据主题名称及订阅<code>ID</code>删除订阅，删除不存在的订阅也不会报错。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging subscription-delete &#123;topic_name&#125; &#123;subscription_id&#125;</div></pre></td></tr></table></figure>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-delete test 59e44e0024ed673f277dcec3</div></pre></td></tr></table></figure>
-<h3 id="3-4-消息管理"><a href="#3-4-消息管理" class="headerlink" title="3.4 消息管理"></a>3.4 消息管理</h3><p>消息管理主要是消息服务中对消息的发送，消费，订阅等操作的处理。</p>
-<ul>
-<li>向队列发送消息</li>
-</ul>
-<p>向指定队列里发送消息，支持批量发送，必须指定<code>client-id</code>。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging message-post &#123;queue_name&#125; &#123;messages&#125; --client-id &#123;client-id&#125;</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>queue_name</code>: 发送消息的目标队列，必选。<br><code>messages</code>：消息列表，格式为<code>JSON</code>，必选。<br><code>body</code>: 消息体，必须存在。内容为<code>JSON</code>，必选。<br><code>ttl</code>：消息的生命周期，可选项。<br><code>delay_ttl</code>: 消息的延迟时间，可选项。<br><code>client-id</code>：发送消息的客户端<code>id</code>。必选项。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging message-post test &apos;[&#123;&quot;body&quot;:&#123;&quot;yzy&quot;:&quot;test&quot;, &quot;msg&quot;: &quot;你好111111111111111&quot;&#125;, &quot;ttl&quot;: 63, &quot;delay_ttl&quot;: 30&#125;,&#123;&quot;body&quot;:&#123;&quot;yzy&quot;:&quot;test&quot;, &quot;msg&quot;: &quot;你好222222&quot;&#125;, &quot;ttl&quot;: 631, &quot;delay_ttl&quot;: 32&#125;]&apos; --client-id 38b4aee5-0a05-47f1-a627-f7c4c3e24382</div></pre></td></tr></table></figure>
-<ul>
-<li>队列中消息列表查询</li>
-</ul>
-<p>根据队列的名称查询该队列中的所有消息。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging message-list &#123;queue_name&#125; --client-id &#123;client_id&#125; --echo --include-delayed --include-claimed --limit 1</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>queue_name</code>: 队列名称，必选。<br><code>client-id</code>：获取该<code>client-id</code>向该队列发送的消息，必选。<br><code>echo</code>: 如果为True则证明要获取该<code>client</code>的消息，否则获取除了该<code>client</code>的消息。默认为<code>False</code>，可选。<br><code>include-delayed</code>: 返回结果是否包括处于延迟状态的消息，可选。<br><code>include-claimed</code>：返回结果是否处于消费状态的消息，可选。<br><code>limit</code>：返回结果个数限制，可选。</p>
-</blockquote>
-<p>输出说明：</p>
-<blockquote>
-<p><code>ID</code>: 消息<code>ID</code>。<br><code>TTL</code>：消息生命周期。<br><code>Age</code>: 消息存活时间。<br><code>Status</code>: 消息当前状态，目前包括<code>active</code>（可消费），<code>inactive</code>（消费冷却中），<code>delayed</code>（延迟中）。<br><code>Status_End_Time</code>：状态过渡到<code>active</code>的时间，只有<code>inactive</code>和<code>delay</code>时有效。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging message-list test --client-id 38b4aee5-0a05-47f1-a627-f7c4c3e24382 --echo --include-delayed --include-claimed</div><div class="line">+--------------------------+------+-----+---------+----------------------+</div><div class="line">| ID                       |  TTL | Age | Status  | Status_End_Time      |</div><div class="line">+--------------------------+------+-----+---------+----------------------+</div><div class="line">| 59e4721a24ed673f277dcec6 | 6300 | 3103| inactive| 2017-10-16T09:39:23Z |</div><div class="line">| 59e4721a24ed673f277dcec7 | 6310 |  35 | active  | --                   |</div><div class="line">| 59e4721d24ed673f277dcec8 | 6300 |  32 | active  | --                   |</div><div class="line">| 59e4721d24ed673f277dcec9 | 6310 |  32 | active  | --                   |</div><div class="line">| 59e4721f24ed673f277dceca | 6300 |  30 | active  | --                   |</div><div class="line">| 59e4721f24ed673f277dcecb | 6310 |  30 | delayed | 2017-10-16T08:47:59Z |</div><div class="line">| 59e4722224ed673f277dcecc | 6300 |  27 | delayed | 2017-10-16T08:48:00Z |</div><div class="line">| 59e4722224ed673f277dcecd | 6310 |  27 | delayed | 2017-10-16T08:48:02Z |</div><div class="line">+--------------------------+------+-----+---------+----------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>从队列中消费消息</li>
-</ul>
-<p>从指定队列中消费消息，支持批量消费消息，支持自动删除消费消息。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging message-consume &#123;queue_name&#125; --limit &#123;limit&#125; --auto-delete &#123;1/0&#125;</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>queue_name</code>: 队列名称，必选。<br><code>limit</code>：消息消费的个数，可选。<br><code>auto-delete</code>: 如果为<code>1</code>则消费到的消息会被自动删除，默认为不删除，可选。</p>
-</blockquote>
-<p>输出说明：</p>
-<blockquote>
-<p><code>Messages</code>: 消费得到的消息体。<br><code>Handle</code>：消费的<code>handle</code>。<br><code>Message_ID</code>：消息<code>ID</code>。<br><code>TTL</code>：消息的生命周期。<br><code>Age</code>: 消息已经存活的时间。<br><code>Times</code>：消息被消费过的次数。<br><code>Initial Time</code>：消息的第一次消费时间，<code>utc</code>时间。<br><code>Next Time</code>：消息下一次可以消费的时间，只要当前时间大于该时间，则可以消费，<code>utc</code>时间。<br><code>Created At</code>：消息的创建时间，<code>utc</code>时间。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging message-consume test --limit 3 --auto-delete 1</div><div class="line">+-----------------------------------------------------------+--------------------------+--------------------------+------+------+-------+----------------------+----------------------+----------------------+</div><div class="line">| Messages                                                  | Handle                   | Message_ID               |  TTL |  Age | Times | Initial Time         | Next Time            | Created At           |</div><div class="line">+-----------------------------------------------------------+--------------------------+--------------------------+------+------+-------+----------------------+----------------------+----------------------+</div><div class="line">| &#123;u&apos;msg&apos;: u&apos;\u4f60\u597d222222&apos;, u&apos;yzy&apos;: u&apos;test&apos;&#125;          | 59e47b0524ed673f277dced1 | 59e4721a24ed673f277dcec7 | 6310 | 2284 |     1 | 2017-10-16T09:25:25Z | 2017-10-16T09:25:55Z | 2017-10-16T08:47:22Z |</div><div class="line">| &#123;u&apos;msg&apos;: u&apos;\u4f60\u597d111111111111111&apos;, u&apos;yzy&apos;: u&apos;test&apos;&#125; | 59e47b0524ed673f277dced2 | 59e4721d24ed673f277dcec8 | 6300 | 2281 |     1 | 2017-10-16T09:25:25Z | 2017-10-16T09:25:55Z | 2017-10-16T08:47:25Z |</div><div class="line">| &#123;u&apos;msg&apos;: u&apos;\u4f60\u597d222222&apos;, u&apos;yzy&apos;: u&apos;test&apos;&#125;          | 59e47b0624ed673f277dced3 | 59e4721d24ed673f277dcec9 | 6310 | 2281 |     1 | 2017-10-16T09:25:25Z | 2017-10-16T09:25:55Z | 2017-10-16T08:47:25Z |</div><div class="line">+-----------------------------------------------------------+--------------------------+--------------------------+------+------+-------+----------------------+----------------------+----------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>删除消息</li>
-</ul>
-<p>根据消费的<code>handle</code>删除该消息，只有消费过的消息才能被删除，并且该<code>handle</code>没有过期，支持批量删除。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging message-delete &#123;queue_name&#125; &#123;message_handles&#125;</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>queue_name</code>: 队列名称，必选。<br><code>message_handles</code>：消息消费的<code>handles</code>，支持多个，多个用逗号隔开，必选。</p>
-</blockquote>
-<p>输出说明：</p>
-<blockquote>
-<p><code>Expired</code>: 过期的消息<code>handle</code>列表，删除失败。<br><code>Invalid</code>：错误的消息<code>handle</code>列表，删除失败。<br><code>Success</code>：删除成功的消息<code>handle</code>列表。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging message-delete test 59e47e8424ed673f607dcebb,59e47e8424ed673f607dcebc,59e47e8424ed673f607dcebs</div><div class="line">+---------+------------------------------------------------------------+</div><div class="line">| Field   | Value                                                      |</div><div class="line">+---------+------------------------------------------------------------+</div><div class="line">| Expired | [u&apos;59e47e8424ed673f607dcebb&apos;]                              |</div><div class="line">| Invalid | [u&apos;59e47e8424ed673f607dcebs&apos;]                              |</div><div class="line">| Success | [u&apos;59e47e8424ed673f607dcebc&apos;]                              |</div><div class="line">+---------+------------------------------------------------------------+</div></pre></td></tr></table></figure>
-<ul>
-<li>向主题发布消息</li>
-</ul>
-<p>向指定主题发送消息，支持批量。如果有订阅者，则订阅者会接收到该消息，如果订阅终端为<code>webhook</code>，则要求存在该<code>WEB-Service</code>，否则无法成功订阅。命令为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">openstack es-messaging message-publish &#123;topic_name&#125; &#123;messages&#125; --client-id &#123;client-id&#125;</div></pre></td></tr></table></figure>
-<p>输入参数说明：</p>
-<blockquote>
-<p><code>topic_name</code>: 主题名称，必选。<br><code>messages</code>：消息列表，格式为<code>JSON</code>，必选。<br><code>body</code>: 消息体，必须存在。内容为<code>JSON</code>，必选。<br><code>tags</code>：消息的过滤标签，可选项。<br><code>client-id</code>：发送消息的客户端<code>id</code>。必选项。</p>
-</blockquote>
-<p>举例说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">[root@node-145 ~(keystone_admin)]# openstack es-messaging message-publish test &apos;[&#123;&quot;body&quot;:&#123;&quot;yzy&quot;:&quot;test&quot;&#125;,&quot;tags&quot;: [&quot;test&quot;]&#125;]&apos; --client-id 38b4aee5-0a05-47f1-a627-f7c4c3e24382</div></pre></td></tr></table></figure>]]></content>
-      
-        <categories>
-            
-            <category> Zaqar </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> Openstack </tag>
-            
-            <tag> Zaqar </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[openstack开发中单元测试调试方法]]></title>
-      <url>/blog/2017-10-12-zaqar-unit-test/</url>
-      <content type="html"><![CDATA[<p>在对<code>openstack</code>的组件进行开发时，尤其是要贡献社区时，单元测试是必须要编写的，<code>openstack</code>的每个模块基本都大同小异，下面就以<code>zaqar</code>作为例子来说明如何调试。</p>
-<p>将<code>zaqar</code>的代码拷贝或者<code>clone</code>到运行单元测试的服务器上，运行测试时会自动在<code>zaqar</code>目录下创建.tox文件夹，并且安装依赖。<br><a id="more"></a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git clone https://github.com/openstack/zaqar.git</div></pre></td></tr></table></figure></p>
-<blockquote>
-<p>注意：这几个文件比较重要，执行单元测试时会用到：<code>.testr.conf</code> <code>.coveragerc</code> <code>.git</code></p>
-</blockquote>
-<p>执行单元测试时需要保证本地具有<code>mongo</code>或者<code>redis</code>服务，并且为单节点没有认证。</p>
-<p>执行单元测试命令</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cd zaqar</div><div class="line">tox -e py27,pep8 &gt; test.log</div></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">cd zaqar</div><div class="line">tox -e integration &gt; test.log</div></pre></td></tr></table></figure>
-<p>如果自己需要添加或者修改单元测试，可以通过<code>print</code>打印调试：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClaimControllerTest</span><span class="params">(ControllerBaseTest)</span>:</span></div><div class="line"></div><div class="line">    ...</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">def</span> <span class="title">test_delay_queue</span><span class="params">(self)</span>:</span></div><div class="line">        meta = &#123;<span class="string">'ttl'</span>: <span class="number">1</span>, <span class="string">'grace'</span>: <span class="number">0</span>&#125;</div><div class="line">        <span class="comment"># Set delay queeu metadata</span></div><div class="line">        metadata = &#123;<span class="string">"_delay_ttl"</span>: <span class="number">5</span>&#125;</div><div class="line">        self.queue_controller.set_metadata(self.queue_name,</div><div class="line">                                           metadata,</div><div class="line">                                           project=self.project)</div><div class="line">        queue_delay = self.queue_controller.get_metadata(self.queue_name,</div><div class="line">                                                         project=self.project)</div><div class="line">        queue_delay_ttl = queue_delay.get(<span class="string">'_delay_ttl'</span>)</div><div class="line">        </div><div class="line">        <span class="keyword">print</span> queue_delay_ttl</div><div class="line">        </div><div class="line">    ...</div></pre></td></tr></table></figure>
-<p>之后继续执行前面的命令，然后在<code>test.log</code>中可以看到输出</p>
-]]></content>
-      
-        <categories>
-            
-            <category> Zaqar </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> Openstack </tag>
-            
-            <tag> Zaqar </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[使用hexo搭建个人博客（转）]]></title>
-      <url>/blog/2016-10-10-hexo-blog/</url>
-      <content type="html"><![CDATA[<h1 id="使用Hexo"><a href="#使用Hexo" class="headerlink" title="使用Hexo"></a>使用Hexo</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">mkdir hexo  #创建一个文件夹</div><div class="line">cd hexo</div><div class="line">npm install -g hexo-cli</div><div class="line">npm install hexo --save</div></pre></td></tr></table></figure>
-<h2 id="部署Hexo"><a href="#部署Hexo" class="headerlink" title="部署Hexo"></a>部署Hexo</h2><p>在<code>Git shell</code> 中输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hexo init</div></pre></td></tr></table></figure></p>
-<a id="more"></a>
-<p>安装<code>Hexo</code>插件：自动生成<code>sitemap</code>,<code>Rss</code>，部署到<code>git</code>等，建议安装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">npm install hexo-generator-index --save</div><div class="line">npm install hexo-generator-archive --save</div><div class="line">npm install hexo-generator-category --save</div><div class="line">npm install hexo-generator-tag --save</div><div class="line">npm install hexo-server --save</div><div class="line">npm install hexo-deployer-git --save</div><div class="line">npm install hexo-deployer-heroku --save</div><div class="line">npm install hexo-deployer-rsync --save</div><div class="line">npm install hexo-deployer-openshift --save</div><div class="line">npm install hexo-renderer-marked@0.2 --save</div><div class="line">npm install hexo-renderer-stylus@0.2 --save</div><div class="line">npm install hexo-generator-feed@1 --save</div><div class="line">npm install hexo-generator-sitemap@1 --save</div></pre></td></tr></table></figure></p>
-<p>如果国内网络不好，可以使用淘宝的<code>npm</code>源<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm install -g cnpm --registry=https://registry.npm.taobao.org</div></pre></td></tr></table></figure></p>
-<p>然后将上面要装的插件命令中的<code>npm</code>都替换为<code>cnpm</code></p>
-<h2 id="Hexo常用的几个命令"><a href="#Hexo常用的几个命令" class="headerlink" title="Hexo常用的几个命令"></a>Hexo常用的几个命令</h2><h3 id="创建新博文"><a href="#创建新博文" class="headerlink" title="创建新博文"></a>创建新博文</h3><p>执行<code>new</code>命令，生成指定名称的文章至<code>hexo\source_posts\postName.md</code>。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hexo new [layout] &quot;postName&quot; #新建文章</div></pre></td></tr></table></figure>
-<p>其中<code>layout</code>是可选参数，默认值为<code>post</code>。有哪些<code>layout</code>呢，请到<code>scaffolds</code>目录下查看，这些文件名称就是<code>layout</code>名称。当然你可以添加自己的<code>layout</code>，方法就是添加一个文件即可，同时你也可以编辑现有的<code>layout</code>，比如<code>post</code>的<code>layout</code>默认是<code>hexo\scaffolds\post.md</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">title: &#123; &#123; title &#125; &#125;</div><div class="line">date: &#123; &#123; date &#125; &#125;</div><div class="line">tags:</div><div class="line">---</div></pre></td></tr></table></figure></p>
-<blockquote>
-<p>请注意，大括号与大括号之间我多加了个空格，否则会被转义，不能正常显示。</p>
-</blockquote>
-<p>我想添加<code>categories</code>，以免每次手工输入，只需要修改这个文件添加一行，如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">title: &#123; &#123; title &#125; &#125;</div><div class="line">date: &#123; &#123; date &#125; &#125;</div><div class="line">categories: </div><div class="line">tags: </div><div class="line">---</div></pre></td></tr></table></figure>
-<p>更多信息参考: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="运行服务器"><a href="#运行服务器" class="headerlink" title="运行服务器"></a>运行服务器</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server #或者 hexo s</div></pre></td></tr></table></figure>
-<p>参考: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="生成静态站点文件"><a href="#生成静态站点文件" class="headerlink" title="生成静态站点文件"></a>生成静态站点文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate #或者 hexo g</div></pre></td></tr></table></figure>
-<p>参考: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="部署到Git"><a href="#部署到Git" class="headerlink" title="部署到Git"></a>部署到<code>Git</code></h3><p>部署到<code>Github</code>前需要配置<code>_config.yml</code>文件</p>
-<p>添加如下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">deploy:</div><div class="line">	type: git</div><div class="line">	repository: git@github.com:cdyangzhenyu/cdyangzhenyu.github.io.git</div><div class="line">	branch: master</div></pre></td></tr></table></figure>
-<p>然后输入：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy #或者 hexo d</div></pre></td></tr></table></figure></p>
-<p>参考: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-<h1 id="fancybox"><a href="#fancybox" class="headerlink" title="fancybox"></a>fancybox</h1><p>如果想要给添加图片，则可以使用<code>fancybox</code>，这个是怎么做的呢。<br>很简单，只需要在你的文章<code>*.md</code>文件的头上添加<code>photos</code>项即可，然后一行行添加你要展示的照片:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">title: </div><div class="line">photos:</div><div class="line">- http://bruce.u.qiniudn.com/2013/11/27/reading/photos-0.jpg</div><div class="line">- http://bruce.u.qiniudn.com/2013/11/27/reading/photos-1.jpg</div><div class="line">---</div></pre></td></tr></table></figure></p>
-<h1 id="主题设置"><a href="#主题设置" class="headerlink" title="主题设置"></a>主题设置</h1><p>本博客采用了<code>iissnan</code>的<code>Next</code>主题，他的博客有详细的安装教程，这里贴下链接<a href="http://theme-next.iissnan.com/" target="_blank" rel="external">next</a>，有需要的朋友直接参考他写的教程，一气呵成~</p>
-<h2 id="下载主题"><a href="#下载主题" class="headerlink" title="下载主题"></a>下载主题</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ cd hexo目录</div><div class="line">$ git clone https://github.com/iissnan/hexo-theme-next themes/next</div></pre></td></tr></table></figure>
-<h2 id="应用Hexo主题"><a href="#应用Hexo主题" class="headerlink" title="应用Hexo主题"></a>应用<code>Hexo</code>主题</h2><p>在<code>hexo</code>目录下找到<code>_config.yml</code>配置文件，找到<code>theme</code>字段，并将其值更改为 <code>next</code>，如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">theme: next</div></pre></td></tr></table></figure>
-<h2 id="设置RSS"><a href="#设置RSS" class="headerlink" title="设置RSS"></a>设置RSS</h2><p>在上面的步骤中已经安装了<code>Rss</code>插件，只要要在<code>themes\next_config.yml</code>配置文件中添加如下一行即可：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rss：</div></pre></td></tr></table></figure>
-<h2 id="添加标签tags页面"><a href="#添加标签tags页面" class="headerlink" title="添加标签tags页面"></a>添加标签tags页面</h2><p>定位到<code>Hexo</code>站点目录下，使用<code>hexo new page</code>新建一个页面，命名为<code>tags</code>，布局格式为<code>page</code>：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ cd hexo目录</div><div class="line">$ hexo new page tags</div></pre></td></tr></table></figure>
-<p>内容如下所示，如果要关闭<code>tags</code>页面的评论可以设置<code>comments</code>为<code>false</code>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">title: 标签</div><div class="line">date: 2014-12-22 12:39:04</div><div class="line">type: &quot;tags&quot;</div><div class="line">comments: false</div><div class="line">---</div></pre></td></tr></table></figure></p>
-<p>这样以后<code>tags</code>页面在每次执行<code>hexo generate</code>后自动更新。</p>
-<h2 id="添加分类页面"><a href="#添加分类页面" class="headerlink" title="添加分类页面"></a>添加分类页面</h2><p>和上面的一样，在<code>hexo</code>目录下执行下面命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new page categories</div></pre></td></tr></table></figure></p>
-<p>内容为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">title: 分类</div><div class="line">date: 2014-12-22 12:39:04</div><div class="line">type: &quot;categories&quot;</div><div class="line">comments: false</div><div class="line">---</div></pre></td></tr></table></figure></p>
-<h2 id="添加404页面"><a href="#添加404页面" class="headerlink" title="添加404页面"></a>添加404页面</h2><p>新建一个<code>404.html</code>文件，放到<code>themes\next\source</code>目录下，内容你自己定。</p>
-<p>代码高亮<br>Hexo下只需要按照下面的格式：</p>
-<p>效果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">System.out.println(&quot;hello hexo!&quot;);</div></pre></td></tr></table></figure></p>
-<p>你也可以更改代码高亮的主题，一共有五种，可选的值有<code>normal</code>， <code>night</code>， <code>night blue</code>， <code>night bright</code>， <code>night eighties</code>，修改<code>themes\next_config.yml</code>文件，如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">highlight_theme: normal</div></pre></td></tr></table></figure>
-<h2 id="第三方服务"><a href="#第三方服务" class="headerlink" title="第三方服务"></a>第三方服务</h2><h3 id="多说评论"><a href="#多说评论" class="headerlink" title="多说评论"></a>多说评论</h3><p>登录多说官网，登录后点我要安装，然后填写站点相关信息，最主要的是<code>duoshuo_shortname</code>这个字段，设置后之后修改<code>themes\next_config.yml</code>文件，把<code>duoshuo_shortname</code>改成你的，如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">duoshuo_shortname: aiven</div></pre></td></tr></table></figure>
-<h3 id="百度统计"><a href="#百度统计" class="headerlink" title="百度统计"></a>百度统计</h3><p>登录百度统计，转到获取代码截面，找到百度统计脚本<code>id</code>，然后把<code>themes\next_config.yml</code>文件下的<code>baidu_analytics</code>字段改成你的id，如下所示：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">baidu_analytics: 340874ba9357cbe81570aa4ac1185941</div></pre></td></tr></table></figure>
-<h3 id="站内搜索"><a href="#站内搜索" class="headerlink" title="站内搜索"></a>站内搜索</h3><p><code>next</code>主题集成了<code>swiftype</code>搜索，你需要到<code>swiftype</code>配置一个搜索引擎， 而后编辑 站点配置文件， 新增<code>swiftype_key</code>字段，值为你的<code>swiftype</code>搜索引擎的<code>key</code>。 详细的配置请参考：<a href="http://theme-next.iissnan.com/third-party-services.html#swfitype" target="_blank" rel="external">swfitype教程</a></p>
-<h3 id="其他设置"><a href="#其他设置" class="headerlink" title="其他设置"></a>其他设置</h3><p>其他设置比如侧边栏、友情链接、菜单栏等请参考<code>next</code>主题配置教程</p>
-<p>最后附上我的站点配置文件，如果有不懂的可以给我留言或者发邮件。<br><code>_config.yml</code>配置文件内容如下：</p>
-<p>站点配置文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div></pre></td><td class="code"><pre><div class="line"># Hexo Configuration</div><div class="line">## Docs: http://hexo.io/docs/configuration.html</div><div class="line">## Source: https://github.com/hexojs/hexo/</div><div class="line"></div><div class="line"># Site</div><div class="line">title: aiven&apos;s blog</div><div class="line">subtitle:</div><div class="line">description: aiven</div><div class="line">author: aiven</div><div class="line">language: zh-Hans</div><div class="line">timezone: Asia/Shanghai</div><div class="line"></div><div class="line"># URL</div><div class="line">## If your site is put in a subdirectory, set url as &apos;http://yoursite.com/child&apos; and root as &apos;/child/&apos;</div><div class="line">url: http://www.aiven.com</div><div class="line">root: /</div><div class="line">permalink: /blog/:year/:month/:title.html</div><div class="line">permalink_defaults:</div><div class="line"></div><div class="line"># Directory</div><div class="line">source_dir: source</div><div class="line">public_dir: public</div><div class="line">tag_dir: tags</div><div class="line">archive_dir: archives</div><div class="line">category_dir: categories</div><div class="line">code_dir: downloads/code</div><div class="line">i18n_dir: :lang</div><div class="line">skip_render:</div><div class="line"></div><div class="line"># Writing</div><div class="line">new_post_name: :year-:month-:day-:title.md # File name of new posts</div><div class="line">default_layout: post</div><div class="line">titlecase: false # Transform title into titlecase</div><div class="line">external_link: true # Open external links in new tab</div><div class="line">filename_case: 0</div><div class="line">render_drafts: false</div><div class="line">post_asset_folder: false</div><div class="line">relative_link: false</div><div class="line">future: true</div><div class="line">highlight:</div><div class="line">  enable: true</div><div class="line">  line_number: true</div><div class="line">  auto_detect: true</div><div class="line">  tab_replace:</div><div class="line"></div><div class="line"># Category &amp; Tag</div><div class="line">default_category: uncategorized</div><div class="line">category_map:</div><div class="line">tag_map:</div><div class="line"></div><div class="line"># Date / Time format</div><div class="line">## Hexo uses Moment.js to parse and display date</div><div class="line">## You can customize the date format as defined in</div><div class="line">## http://momentjs.com/docs/#/displaying/format/</div><div class="line">date_format: YYYY-MM-DD</div><div class="line">time_format: HH:mm:ss</div><div class="line"></div><div class="line"># Pagination</div><div class="line">## Set per_page to 0 to disable pagination</div><div class="line">per_page: 10</div><div class="line">pagination_dir: page</div><div class="line"></div><div class="line"># Extensions</div><div class="line">## Plugins: http://hexo.io/plugins/</div><div class="line">## Themes: http://hexo.io/themes/</div><div class="line">theme: next </div><div class="line">#since: 2014</div><div class="line"># Deployment</div><div class="line">## Docs: http://hexo.io/docs/deployment.html</div><div class="line">deploy:</div><div class="line">  type: git</div><div class="line">  repository: git@github.com:cdyangzhenyu/cdyangzhenyu.github.io.git </div><div class="line">  coding.net: git@git.coding.net:xxx/xxx.git,coding-pages</div></pre></td></tr></table></figure></p>
-<p>主题配置文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div></pre></td><td class="code"><pre><div class="line"># ---------------------------------------------------------------</div><div class="line"># Site Information Settings</div><div class="line"># ---------------------------------------------------------------</div><div class="line"></div><div class="line"># Place your favicon.ico to /source directory.</div><div class="line">favicon: /favicon.ico</div><div class="line"></div><div class="line"># Set default keywords (Use a comma to separate)</div><div class="line">keywords: &quot;Hexo, NexT&quot;</div><div class="line"></div><div class="line"># Set rss to false to disable feed link.</div><div class="line"># Leave rss as empty to use site&apos;s feed link.</div><div class="line"># Set rss to specific value if you have burned your feed already.</div><div class="line">rss:</div><div class="line"></div><div class="line"># Specify the date when the site was setup</div><div class="line">since: 2014</div><div class="line"></div><div class="line"># ---------------------------------------------------------------</div><div class="line"># Menu Settings</div><div class="line"># ---------------------------------------------------------------</div><div class="line"></div><div class="line"># When running hexo in a subdirectory (e.g. domain.tld/blog)</div><div class="line"># Remove leading slashes ( &quot;/archives&quot; -&gt; &quot;archives&quot; )</div><div class="line">menu:</div><div class="line">  home: /</div><div class="line">  categories: /categories</div><div class="line">  archives: /archives</div><div class="line">  tags: /tags</div><div class="line">  about: /about</div><div class="line">#  commonweal: /404.html</div><div class="line"></div><div class="line"># Enable/Disable menu icons.</div><div class="line"># Icon Mapping:</div><div class="line">#   Map a menu item to a specific FontAwesome icon name.</div><div class="line">#   Key is the name of menu item and value is the name of FontAwsome icon.</div><div class="line">#   When an question mask icon presenting up means that the item has no mapping icon.</div><div class="line">menu_icons:</div><div class="line">  enable: true</div><div class="line">  # Icon Mapping.</div><div class="line">  home: home</div><div class="line">  about: user</div><div class="line">  categories: th</div><div class="line">  tags: tags</div><div class="line">  archives: archive</div><div class="line">  commonweal: heartbeat</div><div class="line"></div><div class="line"># ---------------------------------------------------------------</div><div class="line"># Scheme Settings</div><div class="line"># ---------------------------------------------------------------</div><div class="line"></div><div class="line"># Schemes</div><div class="line">#scheme: Muse</div><div class="line">scheme: Mist</div><div class="line">#scheme: Pisces</div><div class="line"></div><div class="line"># ---------------------------------------------------------------</div><div class="line"># Sidebar Settings</div><div class="line"># ---------------------------------------------------------------</div><div class="line"></div><div class="line"># Social links</div><div class="line">social:</div><div class="line">  GitHub: https://github.com/xxx</div><div class="line">  weibo: http://weibo.com/xxx</div><div class="line">  zhihu: http://www.zhihu.com/people/xxx</div><div class="line">  #Others:</div><div class="line"></div><div class="line"># Social Icons</div><div class="line">social_icons:</div><div class="line">  enable: true</div><div class="line">  # Icon Mappings</div><div class="line">  GitHub: github</div><div class="line">  Twitter: twitter</div><div class="line">  weibo: weibo</div><div class="line">  zhihu: weibo </div><div class="line"></div><div class="line"># Sidebar Avatar</div><div class="line"># in theme directory(source/images): /images/avatar.jpg</div><div class="line"># in site  directory(source/uploads): /uploads/avatar.jpg</div><div class="line"># default : /images/default_avatar.jpg</div><div class="line">avatar: /images/avatar.jpg</div><div class="line"></div><div class="line"># TOC in the Sidebar</div><div class="line">toc:</div><div class="line">  enable: true</div><div class="line"></div><div class="line">  # Automatically add list number to toc.</div><div class="line">  number: true</div><div class="line"></div><div class="line"># Creative Commons 4.0 International License.</div><div class="line"># http://creativecommons.org/</div><div class="line"># Available: by | by-nc | by-nc-nd | by-nc-sa | by-nd | by-sa | zero</div><div class="line">#creative_commons: by-nc-sa</div><div class="line">#creative_commons:</div><div class="line"></div><div class="line">sidebar:</div><div class="line">  # Sidebar Position, available value: left | right</div><div class="line">  position: left</div><div class="line">  #position: right</div><div class="line"></div><div class="line">  # Sidebar Display, available value:</div><div class="line">  #  - post    expand on posts automatically. Default.</div><div class="line">  #  - always  expand for all pages automatically</div><div class="line">  #  - hide    expand only when click on the sidebar toggle icon.</div><div class="line">  #  - remove  Totally remove sidebar including sidebar toggle icon.</div><div class="line">  display: post</div><div class="line">  #display: always</div><div class="line">  #display: hide</div><div class="line">  #display: remove</div><div class="line"></div><div class="line"># ---------------------------------------------------------------</div><div class="line"># Misc Theme Settings</div><div class="line"># ---------------------------------------------------------------</div><div class="line"></div><div class="line"># Custom Logo.</div><div class="line"># !!Only available for Default Scheme currently.</div><div class="line"># Options:</div><div class="line">#   enabled: [true/false] - Replace with specific image</div><div class="line">#   image: url-of-image   - Images&apos;s url</div><div class="line">custom_logo:</div><div class="line">  enabled: false</div><div class="line">  image:</div><div class="line"></div><div class="line"># Code Highlight theme</div><div class="line"># Available value:</div><div class="line">#    normal | night | night eighties | night blue | night bright</div><div class="line"># https://github.com/chriskempson/tomorrow-theme</div><div class="line">highlight_theme: night </div><div class="line"></div><div class="line"># Automatically scroll page to section which is under &lt;!-- more --&gt; mark.</div><div class="line">scroll_to_more: true</div><div class="line"></div><div class="line"># Automatically Excerpt</div><div class="line">auto_excerpt:</div><div class="line">  enable: false</div><div class="line">  length: 150</div><div class="line"></div><div class="line"># Use Lato font</div><div class="line">use_font_lato: true</div><div class="line"></div><div class="line"># ---------------------------------------------------------------</div><div class="line"># Third Party Services Settings</div><div class="line"># ---------------------------------------------------------------</div><div class="line"></div><div class="line"># MathJax Support</div><div class="line">mathjax:</div><div class="line"></div><div class="line"># Swiftype Search API Key</div><div class="line">swiftype_key: fLM9qfxyerC6njvM7usy</div><div class="line"></div><div class="line"># Baidu Analytics ID</div><div class="line">baidu_analytics: 340874ba9357cbe81570aa4ac1185941</div><div class="line"></div><div class="line"># Duoshuo ShortName</div><div class="line">duoshuo_shortname: xxx </div><div class="line"></div><div class="line"># Disqus</div><div class="line">#disqus_shortname:</div><div class="line"></div><div class="line"># Share</div><div class="line">#jiathis:</div><div class="line">#add_this_id:</div><div class="line"></div><div class="line"># Share</div><div class="line">duoshuo_share: true</div><div class="line"># 多说热评文章 true 或者 false</div><div class="line">duoshuo_hotartical: true</div><div class="line"></div><div class="line"># Google Webmaster tools verification setting</div><div class="line"># See: https://www.google.com/webmasters/</div><div class="line">#google_site_verification:</div><div class="line"></div><div class="line"># Google Analytics</div><div class="line">#google_analytics:</div><div class="line"></div><div class="line"># Make duoshuo show UA</div><div class="line"># user_id must NOT be null when admin_enable is true!</div><div class="line"># you can visit http://dev.duoshuo.com get duoshuo user id.</div><div class="line">duoshuo_info:</div><div class="line">  ua_enable: true</div><div class="line">  admin_enable: false</div><div class="line">  user_id: 0</div><div class="line">  #admin_nickname: ROOT</div><div class="line"></div><div class="line"># Facebook SDK Support.</div><div class="line"># https://github.com/iissnan/hexo-theme-next/pull/410</div><div class="line">facebook_sdk:</div><div class="line">  enable: false</div><div class="line">  app_id:       #&lt;app_id&gt;</div><div class="line">  fb_admin:     #&lt;user_id&gt;</div><div class="line">  like_button:  #true</div><div class="line">  webmaster:    #true</div><div class="line"></div><div class="line"># Show number of visitors to each article.</div><div class="line"># You can visit https://leancloud.cn get AppID and AppKey.</div><div class="line">leancloud_visitors:</div><div class="line">  enable: false</div><div class="line">  app_id: #&lt;app_id&gt;</div><div class="line">  app_key: #&lt;app_key&gt;</div><div class="line"></div><div class="line"># Tencent analytics ID</div><div class="line"># tencent_analytics:</div><div class="line"></div><div class="line">#! ---------------------------------------------------------------</div><div class="line">#! DO NOT EDIT THE FOLLOWING SETTINGS</div><div class="line">#! UNLESS YOU KNOW WHAT YOU ARE DOING</div><div class="line">#! ---------------------------------------------------------------</div><div class="line"></div><div class="line"># Motion</div><div class="line">use_motion: true</div><div class="line"></div><div class="line"># Fancybox</div><div class="line">fancybox: true</div><div class="line"></div><div class="line"># Static files</div><div class="line">vendors: vendors</div><div class="line">css: css</div><div class="line">js: js</div><div class="line">images: images</div><div class="line"></div><div class="line"># Theme version</div><div class="line">version: 0.5.0</div><div class="line"></div><div class="line"># title, chinese available</div><div class="line">links_title: 友情链接 </div><div class="line"># # links</div><div class="line">links:</div><div class="line">   MacTalk: http://macshuo.com/</div></pre></td></tr></table></figure></p>
-]]></content>
-      
-        <categories>
-            
-            <category> Hexo </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> Git Pages </tag>
-            
-            <tag> Hexo </tag>
-            
-            <tag> Hexo Next </tag>
-            
-        </tags>
-        
-    </entry>
-    
-    <entry>
-      <title><![CDATA[Git操作手册|命令速查表（转）]]></title>
-      <url>/blog/2014-10-12-git-guide/</url>
-      <content type="html"><![CDATA[<p>这篇文章主要介绍Git分布式版本管理与集中式管理的一些差异，总结下Git常用命令作为日后的速查表，最后介绍Git进阶的一些案例。<br>本文分为以下几个部分：</p>
-<ol>
-<li>Git与SVN差异</li>
-<li>Git常用命令</li>
-<li>Git进阶指南<a id="more"></a>
-<h2 id="Git与SVN差异"><a href="#Git与SVN差异" class="headerlink" title="Git与SVN差异"></a>Git与SVN差异</h2></li>
-</ol>
-<p>Git的第一个版本是Linux之父Linus Torvalds亲手操刀设计和实现的,Git 基于 DAG 结构 (Directed Acyclic Graph)，其运行起来相当的快,它已经是现在的主流。</p>
-<p>Git 和 SVN 思想最大的差别有四个：</p>
-<ul>
-<li>去中心化</li>
-<li>直接记录快照，而非差异</li>
-<li>不一样的分支概念</li>
-<li>三个文件状态</li>
-</ul>
-<p><strong>去中心化</strong></p>
-<p>Git是一个DVCS（分布式版本管理系统），在技术层面上并不存在一个像中心仓库这样的东西 ， 所有的数据都在本地，不存在谁是中心</p>
-<p>Git使用SHA-1算法计算数据的校验和，通过文件的内容或目录计算出SHA-1哈希值，作为指纹字符串，每个Version 都是一个快照。</p>
-<p><strong>不一样的分支概念</strong></p>
-<p>Git的分支本质是一个指向提交快照的指针，是从某个提交快照往回看的历史。当创建/切换分支的时候，只是变换了指针指向而已.而SVN创建一个分支， 是的的确确的复制了一份文件。</p>
-<p><strong>三个文件状态</strong></p>
-<p>在Git中文件有三种状态：</p>
-<ul>
-<li>已提交（committed）：该文件被安全地保存在了本地数据库</li>
-<li>已修改（modified）：修改了某个文件，但还没有保存</li>
-<li>已暂存（staged）：把已修改的文件放下下次保存的清单中</li>
-</ul>
-<h2 id="Git常用命令"><a href="#Git常用命令" class="headerlink" title="Git常用命令"></a>Git常用命令</h2><h3 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h3><p>复制一个已创建的仓库:</p>
-<pre><code>$ git clone ssh://user@domain.com/repo.git
-</code></pre><p>创建一个新的本地仓库:</p>
-<pre><code>$ git init
-</code></pre><h3 id="本地修改"><a href="#本地修改" class="headerlink" title="本地修改"></a>本地修改</h3><p>显示工作路径下已修改的文件：</p>
-<pre><code>$ git status
-</code></pre><p>显示与上次提交版本文件的不同：</p>
-<pre><code>$ git diff
-</code></pre><p>把当前所有修改添加到下次提交中：</p>
-<pre><code>$ git add
-</code></pre><p>把对某个文件的修改添加到下次提交中：</p>
-<pre><code>$ git add -p &lt;file&gt;
-</code></pre><p>提交本地的所有修改：</p>
-<pre><code>$ git commit -a
-</code></pre><p>提交之前已标记的变化：</p>
-<pre><code>$ git commit
-</code></pre><p>附加消息提交：</p>
-<pre><code>$ git commit -m &apos;message here&apos;
-</code></pre><p>提交，并将提交时间设置为之前的某个日期:</p>
-<pre><code>git commit --date=&quot;`date --date=&apos;n day ago&apos;`&quot; -am &quot;Commit Message&quot;
-</code></pre><h3 id="修改上次提交"><a href="#修改上次提交" class="headerlink" title="修改上次提交"></a>修改上次提交</h3><p>请勿修改已发布的提交记录!</p>
-<pre><code>$ git commit --amend
-</code></pre><p>把当前分支中未提交的修改移动到其他分支</p>
-<pre><code>git stash
-git checkout branch2
-git stash pop
-</code></pre><h3 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h3><p>从当前目录的所有文件中查找文本内容：</p>
-<pre><code>$ git grep &quot;Hello&quot;
-</code></pre><p>在某一版本中搜索文本：</p>
-<pre><code>$ git grep &quot;Hello&quot; v2.5
-</code></pre><h3 id="提交历史"><a href="#提交历史" class="headerlink" title="提交历史"></a>提交历史</h3><p>从最新提交开始，显示所有的提交记录（显示hash， 作者信息，提交的标题和时间）：</p>
-<pre><code>$ git log
-</code></pre><p>显示所有提交（仅显示提交的hash和message）：</p>
-<pre><code>$ git log --oneline
-</code></pre><p>显示某个用户的所有提交：</p>
-<pre><code>$ git log --author=&quot;username&quot;
-</code></pre><p>显示某个文件的所有修改：</p>
-<pre><code>$ git log -p &lt;file&gt;
-</code></pre><p>谁，在什么时间，修改了文件的什么内容：</p>
-<pre><code>$ git blame &lt;file&gt;
-</code></pre><h3 id="分支与标签"><a href="#分支与标签" class="headerlink" title="分支与标签"></a>分支与标签</h3><p>列出所有的分支：</p>
-<pre><code>$ git branch
-</code></pre><p>切换分支：</p>
-<pre><code>$ git checkout &lt;branch&gt;
-</code></pre><p>创建并切换到新分支:</p>
-<pre><code>$ git checkout -b &lt;branch&gt;
-</code></pre><p>基于当前分支创建新分支：</p>
-<pre><code>$ git branch &lt;new-branch&gt;
-</code></pre><p>基于远程分支创建新的可追溯的分支：</p>
-<pre><code>$ git branch --track &lt;new-branch&gt; &lt;remote-branch&gt;
-</code></pre><p>删除本地分支:</p>
-<pre><code>$ git branch -d &lt;branch&gt;
-</code></pre><p>给当前版本打标签：</p>
-<pre><code>$ git tag &lt;tag-name&gt;
-</code></pre><h3 id="更新与发布"><a href="#更新与发布" class="headerlink" title="更新与发布"></a>更新与发布</h3><p>列出当前配置的远程端：</p>
-<pre><code>$ git remote -v
-</code></pre><p>显示远程端的信息：</p>
-<pre><code>$ git remote show &lt;remote&gt;
-</code></pre><p>添加新的远程端：</p>
-<pre><code>$ git remote add &lt;remote&gt; &lt;url&gt;
-</code></pre><p>下载远程端版本，但不合并到HEAD中：</p>
-<pre><code>$ git fetch &lt;remote&gt;
-</code></pre><p>下载远程端版本，并自动与HEAD版本合并：</p>
-<pre><code>$ git remote pull &lt;remote&gt; &lt;url&gt;
-</code></pre><p>将远程端版本合并到本地版本中：</p>
-<pre><code>$ git pull origin master
-</code></pre><p>将本地版本发布到远程端：</p>
-<pre><code>$ git push remote &lt;remote&gt; &lt;branch&gt;
-</code></pre><p>删除远程端分支：</p>
-<pre><code>$ git push &lt;remote&gt; :&lt;branch&gt; (since Git v1.5.0)
-或
-git push &lt;remote&gt; --delete &lt;branch&gt; (since Git v1.7.0)
-</code></pre><p>发布标签:</p>
-<pre><code>$ git push --tags
-</code></pre><h3 id="合并与重置"><a href="#合并与重置" class="headerlink" title="合并与重置"></a>合并与重置</h3><p>将分支合并到当前HEAD中：</p>
-<pre><code>$ git merge &lt;branch&gt;
-</code></pre><p>将当前HEAD版本重置到分支中:<br>请勿重置已发布的提交!</p>
-<pre><code>$ git rebase &lt;branch&gt;
-</code></pre><p>退出重置:</p>
-<pre><code>$ git rebase --abort
-</code></pre><p>解决冲突后继续重置：</p>
-<pre><code>$ git rebase --continue
-</code></pre><p>使用配置好的merge tool 解决冲突：</p>
-<pre><code>$ git mergetool
-</code></pre><p>在编辑器中手动解决冲突后，标记文件为已解决冲突</p>
-<pre><code>$ git add &lt;resolved-file&gt;
-$ git rm &lt;resolved-file&gt;
-</code></pre><h3 id="撤销"><a href="#撤销" class="headerlink" title="撤销"></a>撤销</h3><p>放弃工作目录下的所有修改：</p>
-<pre><code>$ git reset --hard HEAD
-</code></pre><p>移除缓存区的所有文件（i.e. 撤销上次git add）:</p>
-<pre><code>$ git reset HEAD
-</code></pre><p>放弃某个文件的所有本地修改：</p>
-<pre><code>$ git checkout HEAD &lt;file&gt;
-</code></pre><p>重置一个提交（通过创建一个截然不同的新提交）</p>
-<pre><code>$ git revert &lt;commit&gt;
-</code></pre><p>将HEAD重置到指定的版本，并抛弃该版本之后的所有修改：</p>
-<pre><code>$ git reset --hard &lt;commit&gt;
-</code></pre><p>将HEAD重置到上一次提交的版本，并将之后的修改标记为未添加到缓存区的修改：</p>
-<pre><code>$ git reset &lt;commit&gt;
-</code></pre><p>将HEAD重置到上一次提交的版本，并保留未提交的本地修改：</p>
-<pre><code>$ git reset --keep &lt;commit&gt;
-</code></pre><h2 id="Git进阶指南"><a href="#Git进阶指南" class="headerlink" title="Git进阶指南"></a>Git进阶指南</h2><h3 id="问：如何修改-origin-仓库信息？"><a href="#问：如何修改-origin-仓库信息？" class="headerlink" title="问：如何修改 origin 仓库信息？"></a>问：如何修改 origin 仓库信息？</h3><h4 id="1、添加-origin-仓库信息"><a href="#1、添加-origin-仓库信息" class="headerlink" title="1、添加 origin 仓库信息"></a>1、添加 origin 仓库信息</h4><pre><code>git remote add origin &lt;git仓库地址&gt;
-</code></pre><h4 id="2、查看-origin-仓库信息"><a href="#2、查看-origin-仓库信息" class="headerlink" title="2、查看 origin 仓库信息"></a>2、查看 origin 仓库信息</h4><pre><code># 以下三种方式均可
-git config get --remote.origin.url
-git remote -v
-git remote show origin
-</code></pre><h4 id="3、删除-origin-仓库信息"><a href="#3、删除-origin-仓库信息" class="headerlink" title="3、删除 origin 仓库信息"></a>3、删除 origin 仓库信息</h4><pre><code>git remote rm origin
-</code></pre><h3 id="问：如何配置-git-ssh-keys-？"><a href="#问：如何配置-git-ssh-keys-？" class="headerlink" title="问：如何配置 git ssh keys ？"></a>问：如何配置 git ssh keys ？</h3><p>在本地生成 ssh 私钥 / 公钥 文件<br>将「公钥」添加到 git 服务（github、gitlab、coding.net 等）网站后台<br>测试 git ssh 连接是否成功<br>接下来以添加 github ssh keys 为例，请注意替换 github 文件名。</p>
-<p>注：如果对密钥机制不熟悉，建议不要指定 -f 参数，直接使用默认的 id_rsa 文件名。</p>
-<pre><code># 运行以下命令，一直回车，文件名可随意指定
-ssh-keygen -t rsa -b 4096 -C &quot;kaiye@macbook&quot; -f ~/.ssh/github
-
-# 如果不是默认密钥 id_rsa ，则需要以下命令注册密钥文件，-K 参数将密钥存入 Mac Keychain
-ssh-add -K ~/.ssh/github
-
-# 将 pub 公钥的内容粘贴到线上网站的后台
-cat ~/.ssh/github.pub
-
-# 测试 git ssh 是否连接成功
-ssh -T git@github.com
-</code></pre><h3 id="问：如何撤销修改？"><a href="#问：如何撤销修改？" class="headerlink" title="问：如何撤销修改？"></a>问：如何撤销修改？</h3><p>  修改包含四种情况，需单独区分。</p>
-<h4 id="1、新建的文件和目录，且从未提交至版本库"><a href="#1、新建的文件和目录，且从未提交至版本库" class="headerlink" title="1、新建的文件和目录，且从未提交至版本库"></a>1、新建的文件和目录，且从未提交至版本库</h4><p>  此类文件的状态为 Untracked files ，撤销方法如下：</p>
-<pre><code>git clean -fd .
-</code></pre><p>其中，. 表示当前目录及所有子目录中的文件，也可以直接指定对应的文件路径，以下其他情况类似。</p>
-<h4 id="2、提交过版本库，但未提交至暂存区的文件（未执行-git-add）"><a href="#2、提交过版本库，但未提交至暂存区的文件（未执行-git-add）" class="headerlink" title="2、提交过版本库，但未提交至暂存区的文件（未执行 git add）"></a>2、提交过版本库，但未提交至暂存区的文件（未执行 git add）</h4><p>  此类文件的状态为<code>Changes not staged for commit</code>，撤销方法：</p>
-<pre><code>git checkout .
-</code></pre><h4 id="3、已提交至暂存区的文件"><a href="#3、已提交至暂存区的文件" class="headerlink" title="3、已提交至暂存区的文件"></a>3、已提交至暂存区的文件</h4><p>  此类文件的状态为 Changes to be committed，撤销方法：</p>
-<pre><code>git reset .
-</code></pre><p>执行之后文件将会回到以上的 1 或者 2 状态，可继续按以上步骤执行撤销，若 git reset 同时加上 –hard 参数，将会把修改过的文件也还原成版本库中的版本。</p>
-<h4 id="4、已提交至版本库（执行了-git-commit）"><a href="#4、已提交至版本库（执行了-git-commit）" class="headerlink" title="4、已提交至版本库（执行了 git commit）"></a>4、已提交至版本库（执行了 git commit）</h4><p>  每次提交都会生成一个 hash 版本号，通过以下命令可查阅版本号并将其回滚：</p>
-<pre><code>git log
-git reset &lt;版本号&gt;
-</code></pre><p>如果需要「回滚至上一次提交」，可直接使用以下命令：</p>
-<pre><code>git reset head~1
-</code></pre><p>执行之后，再按照 1 或者 2 状态进行处理即可，如果回滚之后的代码同时需要提交至 origin 仓库（即回滚 origin 线上仓库的代码），需要使用 -f 强制提交参数，且当前用户需要具备「强制提交的权限」。</p>
-<h4 id="5、如果回滚了之后又不想回滚了怎么办？"><a href="#5、如果回滚了之后又不想回滚了怎么办？" class="headerlink" title="5、如果回滚了之后又不想回滚了怎么办？"></a>5、如果回滚了之后又不想回滚了怎么办？</h4><p>  如果是以上的情况 1 或者 2，只能歇屁了，因为修改没入过版本库，无法回滚。</p>
-<p>  如果是情况 4，回滚之后通过 git log 将看不到回滚之前的版本号，但可通过 git reflog 命令（所有使用过的版本号）找到回滚之前的版本号，然后 git reset &lt;版本号&gt; 。</p>
-<h3 id="问：遇到冲突了怎么解决？"><a href="#问：遇到冲突了怎么解决？" class="headerlink" title="问：遇到冲突了怎么解决？"></a>问：遇到冲突了怎么解决？</h3><p>  两个分支进行合并时（通常是 git pull 时），可能会遇到冲突，同时被修改的文件会进入 Unmerged 状态，需要解决冲突。</p>
-<h4 id="1、最快的办法"><a href="#1、最快的办法" class="headerlink" title="1、最快的办法"></a>1、最快的办法</h4><p>  大部分时候，「最快解决冲突」的办法是：使用当前 HEAD 的版本（ours），或使用合并进来的分支版本（theirs）。</p>
-<pre><code># 使用当前分支 HEAD 版本，通常是冲突源文件的 &lt;&lt;&lt;&lt;&lt;&lt;&lt; 标记部分，======= 的上方
-git checkout --ours &lt;文件名&gt;
-
- # 使用合并分支版本，通常是源冲突文件的 &gt;&gt;&gt;&gt;&gt;&gt;&gt; 标记部分
- git checkout --theirs &lt;文件名&gt;
-
-# 标记为解决状态加入暂存区
-git add &lt;文件名&gt;
-</code></pre><h4 id="2、最通用的办法"><a href="#2、最通用的办法" class="headerlink" title="2、最通用的办法"></a>2、最通用的办法</h4><p>  用编辑器打开冲突的源文件进行修改，可能会发生遗留，且体验不好，通常需要借助 git mergetool 命令。</p>
-<p>  在 Mac 系统下，运行 git mergetool &lt;文件名&gt; 可以开启配置的第三方工具进行 merge，默认的是 FileMerge 应用程序，还可以配置成 Meld 或 kdiff3，体验更佳。</p>
-<h4 id="3、最好的习惯"><a href="#3、最好的习惯" class="headerlink" title="3、最好的习惯"></a>3、最好的习惯</h4><p>  有三个好的习惯，可以减少代码的冲突：<br> 在开始修改代码前先 git pull 一下；<br>  将业务代码进行划分，尽量不要多个人在同一时间段修改同一文件；<br>  通过Gitflow 工作流也可以提升 git流程效率，减少发生冲突的可能性。</p>
-<h4 id="4、最复杂的情况"><a href="#4、最复杂的情况" class="headerlink" title="4、最复杂的情况"></a>4、最复杂的情况</h4><p>  如果你的项目周期比较长，还应该养成「定期 rebase 的习惯」，git pull –rebase 可以让分支的代码和 origin 仓库的代码保持兼容，同时还不会破坏线上代码的可靠性。</p>
-<p>  它的大概原理是，先将 origin 仓库的代码按 origin 的时间流在本地分支中提交，再将本地分支的修改记录追加到 origin 分支上。如果发生冲突，则可以即时的发现问题并解决，否则到项目上线时再解决冲突，可能会发生额外的风险。</p>
-<p>  rebase 大概的操作步骤如下：</p>
-<pre><code># 将当前分支的版本追加到从远程 pull 回来的节点之后
-git pull --rebase
-
-# 若发生冲突，则按以上其他方法进行解决，解决后继续
-git rebase --continue
-
-# 直到所有冲突得以解决，待项目最后上线前再执行
-git push origin
-
-# 若多次提交修改了同一文件，可能需要直接跳过后续提交，按提示操作即可
-git rebase --skip
-</code></pre><h3 id="问：如何在不提交修改的前提下，执行-pull-merge-等操作？"><a href="#问：如何在不提交修改的前提下，执行-pull-merge-等操作？" class="headerlink" title="问：如何在不提交修改的前提下，执行 pull / merge 等操作？"></a>问：如何在不提交修改的前提下，执行 pull / merge 等操作？</h3><p>  有些修改没有完全完成之前，可能不需要提交到版本库，圡方法是将修改的文件 copy 到 git 仓库之外的目录临时存放，pull / merge 操作完成之后，再 copy 回来。</p>
-<p>  这样的做法一个是效率不高，另外一个可能会遗漏潜在的冲突。此类需求最好是通过 git stash 命令来完成，它可以将当前工作状态（WIP，work in progress）临时存放在 stash 队列中，待操作完成后再从 stash 队列中重新应用这些修改。</p>
-<p>  以下是 git stash 常用命令：</p>
-<pre><code># 查看 stash 队列中已暂存了多少 WIP
-git stash list
-
-# 恢复上一次的 WIP 状态，并从队列中移除
-git stash pop
-
-# 添加当前 WIP，注意：未提交到版本库的文件会自动忽略，只要不运行 git clean -fd . 就不会丢失
-git stash
-
-# 恢复指定编号的 WIP，同时从队列中移除
-git stash pop stash@{num}
-
-# 恢复指定编号的 WIP，但不从队列中移除
-git stash apply stash@{num}
-</code></pre><h3 id="问：如何在-git-log-中查看修改的文件列表？"><a href="#问：如何在-git-log-中查看修改的文件列表？" class="headerlink" title="问：如何在 git log 中查看修改的文件列表？"></a>问：如何在 git log 中查看修改的文件列表？</h3><p>  默认的 git log 会显示较全的信息，且不包含文件列表。使用 –name-status 可以看到修改的文件列表，使用 –oneline 可以将参数简化成一行。</p>
-<pre><code>git log --name-status --oneline
-</code></pre><p>  每次手动加上参数很麻烦，可以通过自定义快捷命令的方式来简化操作：</p>
-<pre><code>git config --global alias.ls &apos;log --name-status --oneline --graph&apos;
-</code></pre><p>  运行以上配置后，可通过 git ls 命令来实现「自定义 git log」效果，通过该方法也可以创建 git st 、 git ci 等一系列命令，以便沿用 svn 命令行习惯。</p>
-<pre><code>git config --global alias.st &apos;status --porcelain&apos;
-</code></pre><p>  更多 git log 参数，可通过 git help log 查看手册。</p>
-<p>  如果是看上一次提交的版本日志，直接运行 git show 即可。</p>
-<p>  此外，如果你的 Mac 安装了zsh（参考《全新Mac安装指南（编程篇），那么可以直接使用 gst、glog 等一系列快捷命令，详情见此列表：Plugin:git 。</p>
-<h3 id="问：git-submodule-update-时出错怎么解决？"><a href="#问：git-submodule-update-时出错怎么解决？" class="headerlink" title="问：git submodule update 时出错怎么解决？"></a>问：git submodule update 时出错怎么解决？</h3><p>  例如，在执行 git submodule update 时有以下错误信息：</p>
-<blockquote>
-<p>fatal: reference is not a tree: f869da471c5d8a185cd110bbe4842d6757b002f5<br>Unable to checkout ‘f869da471c5d8a185cd110bbe4842d6757b002f5’ in submodule path ‘source/i18n-php-server’</p>
-</blockquote>
-<p>  在此例中，发生以上错误是因为 i18n-php-server 子仓库在某电脑 A 的「本地」commit 了新的版本 「f869da471c5d8a185cd110bbe4842d6757b002f5」，且该次 commit 未 push origin。但其父级仓库 i18n-www 中引用了该子仓库的版本号，且将引用记录 push origin，导致其他客户机无法 update 。</p>
-<p>  解决方法，在电脑 A 上将 i18n-php-server 版本库 push origin 后，在其他客户机上执行 git submodule update 。或者用以上提到的 git reset 方法，将子仓库的引用版本号还原成 origin 上存在的最新版本号。</p>
-<h3 id="其他问题"><a href="#其他问题" class="headerlink" title="其他问题"></a>其他问题</h3><p>  设置本地分支与远程分支保持同步，在第一次 git push 的时候带上 -u 参数即可</p>
-<pre><code>git push origin master -u 
-</code></pre><p>  支持中文目录与文件名的显示（git 默认将非 ASCII 编码的目录与文件名以八进制编码展示）</p>
-<pre><code>git config core.quotepath off
-</code></pre><p>  常用的打 tag 操作，更多请查看《Git 基础 - 打标签》</p>
-<pre><code># 列出所有本地 tag
-git tag   
-
-# 本地新增一个 tag，推送至 origin 服务器
-git tag -a v1.0.0 -m &apos;tag description&apos;
-git push origin v1.0.0
-
-# 删除本地与 origin tag
-git tag -d v1.0.0
-git push origin --delete v1.0.0
-</code></pre><p>  使用 git GUI 客户端（如，SoureTree、Github Desktop）能极大的提升分支管理效率。分支合并操作通常只有两种情况：从 origin merge 到本地，使用 git pull 即可；从另外一个本地分支 merge 到当前分支，使用 git merge &lt;分支名&gt;，以下是常用命令：</p>
-<pre><code># 新建分支 branch1，并切换过去
-git checkout -b branch1
-
-# 查看所有本地与远程分支
-git branch -a
-
-# 修改完成后，切换回 master 分支，将 branch1 分支合并进来
-git checkout master
-git merge branch1
-
-# 删除已完成合并的分支 branch1
-git branch -d branch1
-</code></pre><h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ol>
-<li>Pro Git 简体中文版</li>
-<li>Git权威指南</li>
-<li>命令行man手册</li>
-</ol>
-]]></content>
-      
-        <categories>
-            
-            <category> Git </category>
-            
-        </categories>
-        
-        
-        <tags>
-            
-            <tag> Git </tag>
-            
-            <tag> SVN </tag>
-            
-            <tag> VCS </tag>
-            
-        </tags>
-        
-    </entry>
-    
-  
-  
+<search>
+  <entry>
+    <title><![CDATA[Zaqar docker镜像制作]]></title>
+    <url>%2Fblog%2F2017-10-25-zaqar-dockerfile%2F</url>
+    <content type="text"><![CDATA[docker镜像制作本文中zaqar采用docker进行部署，在部署之前需要制作docker镜像，基于centos7基础镜像制作。制作前准备：安装docker1yum install docker 拉取centos7镜像：1docker pull docker.io/centos 为了避免制作的docker镜像过大，这里直接采用dockerfile进行制作，Dockerfile内容如下：12345678910111213141516171819202122232425262728293031323334353637383940414243444546# zaqar dockerfileFROM docker.io/centosMAINTAINER yangzhenyuRUN echo &quot;==&gt; Init zaqar user and group...&quot; &amp;&amp; \ useradd -d /var/lib/zaqar -s /sbin/nologin zaqar &amp;&amp; \ groupmod -g 971 zaqar &amp;&amp; \ usermod -u 971 zaqar &amp;&amp; \ chown -R zaqar.zaqar /var/lib/zaqar &amp;&amp; \ mkdir /etc/zaqar &amp;&amp; \ mkdir /var/log/zaqar &amp;&amp; \ chgrp zaqar /etc/zaqar &amp;&amp; \ chown zaqar /var/log/zaqar &amp;&amp; \ echo &quot;==&gt; Install dependence package...&quot; &amp;&amp; \ yum install -y epel-release gcc python-devel git &amp;&amp; \ yum install -y python-pip &amp;&amp; \ pip install --upgrade pymongo gevent uwsgi &amp;&amp; \ echo &quot;==&gt; Install zaqar package...&quot; &amp;&amp; \ mkdir /zaqar &amp;&amp; \ cd /zaqar &amp;&amp; \ git clone https://github.com/openstack/python-openstackclient.git &amp;&amp; \ cd /zaqar/python-openstackclient &amp;&amp; \ git checkout stable/pike &amp;&amp; \ pip install . &amp;&amp; \ cd /zaqar &amp;&amp; \ git clone https://github.com/eayunstack/python-zaqarclient.git &amp;&amp; \ cd /zaqar/python-zaqarclient &amp;&amp; \ git checkout devel &amp;&amp; \ pip install . &amp;&amp; \ cd /zaqar &amp;&amp; \ git clone https://github.com/eayunstack/zaqar.git &amp;&amp; \ cd /zaqar/zaqar &amp;&amp; \ git checkout devel &amp;&amp; \ pip install . &amp;&amp; \ echo &quot;==&gt; Clean packages...&quot; &amp;&amp; \ yum remove -y epel-release python-pip &amp;&amp; \ yum remove -y gcc python-devel git &amp;&amp; \ yum clean all &amp;&amp; \ rm -rf /var/cache/yum/* &amp;&amp; \ mkdir /etc/yum.repos.d/repo &amp;&amp; \ mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/repo/ &amp;&amp; \ rm -rf /zaqar &amp;&amp; \ echo &quot;==&gt; Deploy zaqar success...&quot;USER zaqarCMD [&quot;/usr/bin/uwsgi&quot;, &quot;--ini&quot;, &quot;/etc/zaqar/uwsgi.conf&quot;] 只使用1个RUN不会产生过多的中间过程，因为docker每一个命令都会生成一个中间层，这样也就避免了镜像过大的问题。 build镜像1docker build -t eayunstack/zaqar-base . 导出镜像1docker save --output eayunstack_zaqar_base.latest.171025 eayunstack/zaqar-base 目前部署采用ansible进行，请注意导出的镜像文件名的格式。 ansible目录下执行: 1ansible-playbook -vvv site.yml 2&gt;&amp;1 |tee site.log]]></content>
+      <categories>
+        <category>Zaqar</category>
+      </categories>
+      <tags>
+        <tag>Openstack</tag>
+        <tag>Zaqar</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[自定义zaqar版本打包规则]]></title>
+    <url>%2Fblog%2F2017-10-25-zaqar-version-define%2F</url>
+    <content type="text"><![CDATA[背景本文版本中的zaqar是基于社区ocata（版本号4.0.0）进行二次开发的，zaqarclient基于社区pike（版本号1.4.0）。部署采用docker的部署方式。对于zaqar安装基于pip的源码安装方式，版本管理采用pbr+git tag. 版本定义说明zaqar第一次发版版本号定义为4.1.0： 第一位4对应社区大版本ocata，社区大版本这一位都是直接+1，以后更新社区新版本也遵循这一规则。 第二位1为eayun大版本，每一次大版本升级都需要更新该版本号+1。 第三位0为小版本，每次修复bug需要迭代更新时+1。 zaqarclient第一次发版版本号定义为1.4.1： client只需要更新第三位，每次升级都+1 git tagzaqar代码提测制作docker镜像前，需要对devel分支打tag： 12git checkout develgit tag -a 4.1.0 输入以下：12345678910zaqar 4.1.0 releasemeta:version: 4.1.0meta:diff-start: 4.0.0meta:series: ocatameta:release-type: releasemeta:pypi: nometa:first: yesmeta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt;meta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt; 上传远程仓库1git push origin 4.1.0 zaqarclient打tag： 12git checkout develgit tag -a 1.4.1 输入以下：12345678910zaqar 1.4.1 releasemeta:version: 1.4.1meta:diff-start: 1.4.0meta:series: pikemeta:release-type: releasemeta:pypi: nometa:first: yesmeta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt;meta:release:Author: Yang Zhenyu &lt;cdyangzhenyu@gmail.com&gt; 上传远程仓库1git push origin 1.4.1 如果需要删除tag：12git tag -d TAGgit push origin :refs/tags/TAG 安装步骤直接使用pip安装1234[root@node-145 zaqar]# git clone https://github.com/eayunstack/zaqar.git[root@node-145 zaqar]# git checkout dev[root@node-145 zaqar]# cd zaqar[root@node-145 zaqar]# pip install . 查看zaqar的安装版本123[root@node-145 zaqar]# pip list | grep zaqarpython-zaqarclient (1.4.1)zaqar (4.1.0)]]></content>
+      <categories>
+        <category>Zaqar</category>
+      </categories>
+      <tags>
+        <tag>Openstack</tag>
+        <tag>Zaqar</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[zaqar客户端操作（es）]]></title>
+    <url>%2Fblog%2F2017-10-13-zaqar-design-doc%2F</url>
+    <content type="text"><![CDATA[1. 说明本文描述了消息服务客户端操作，目前客户端命令全部带有es标签，由于需求对zaqar的改动较大，在不大范围修改原有client的代码前提下，独立出新的的命令行模块。 2. 功能模块简述目前消息服务的客户端主要包括以下几大功能模块： 队列管理 主题管理 订阅管理 消息管理 所有客户端操作命令如下：123456789101112131415161718192021222324[root@node-145 ~(keystone_admin)]# openstack -h | grep es- [--os-queues-api-version &lt;queues-api-version&gt;] --os-queues-api-version &lt;queues-api-version&gt; es-messaging message-consume Consume messages and return a list of consume messages (python-zaqarclient) es-messaging message-delete Delete consume messages (python-zaqarclient) es-messaging message-list List all messages for a given queue (python-zaqarclient) es-messaging message-post Post messages for a given queue (python-zaqarclient) es-messaging message-publish Publish messages for a given topic (python-zaqarclient) es-messaging queue-create Create a queue (python-zaqarclient) es-messaging queue-delete Delete a queue (python-zaqarclient) es-messaging queue-list List available queues (python-zaqarclient) es-messaging queue-purge Purge a queue (python-zaqarclient) es-messaging queue-show Get queue monitor (python-zaqarclient) es-messaging queue-update Set queue metadata (python-zaqarclient) es-messaging subscription-create Create a subscription for topic (python-zaqarclient) es-messaging subscription-delete Delete a subscription (python-zaqarclient) es-messaging subscription-list List available subscriptions (python-zaqarclient) es-messaging subscription-show Display subscription details (python-zaqarclient) es-messaging subscription-update Update a subscription (python-zaqarclient) es-messaging topic-create Create a topic (python-zaqarclient) es-messaging topic-delete Delete a topic (python-zaqarclient) es-messaging topic-list List available topics (python-zaqarclient) es-messaging topic-show Get topic monitor (python-zaqarclient) es-messaging topic-update Set topic metadata (python-zaqarclient) 3.命令操作3.1 队列管理队列管理主要是针对消息服务中队列资源的生命周期管理，主要功能包括：队列的创建，队列删除，队列查询，队列清空，队列修改，队列监控。 队列创建 队列创建需要传递的参数主要是队列的名称，名称必须是项目里唯一，否则不会创建新的队列。命令为： 1openstack es-messaging queue-create &#123;queue_name&#125; 举例说明： 123456[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-create test+-------+-------+| Field | Value |+-------+-------+| Name | test |+-------+-------+ 队列更新 根据队列的名称更新队列的元数据，可更新的内容包括，最大长度，生命周期，独占时间，延迟时间。 1openstack es-messaging queue-update &#123;queue_name&#125; &#123;queue_metadata&#125; 输入参数说明： queue_metadata: 元数据字典，可选。_max_messages_post_size：最大长度，可选。_default_message_ttl：生命周期，可选。claim_ttl：独占时间，可选。delay_ttl：延迟时间，可选。 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-update test &apos;&#123;&quot;_max_messages_post_size&quot;: 233333&#125;&apos; 队列列表 查询队列的列表。支持detail参数，表明获取详细列表。命令为： 1openstack es-messaging queue-list --detail 输出说明： Name: 队列名称。Metadata_Dict：队列的元数据字典，包括生命周期，最大长度，延迟时间，独占时间。Href：资源链接，暂时无意义。Created_at：队列创建时间，utc时间。Updated_at：队列的更新时间，utc时间，初始化和创建时间相同。 举例说明： 123456789101112131415[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-list+-------------+| Name |+-------------+| test || test_queues |+-------------+[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-list --detail+-------------+---------------------------------------------------------------------------------------------------------+------------------------+----------------------+----------------------+| Name | Metadata_Dict | Href | Created_at | Updated_at |+-------------+---------------------------------------------------------------------------------------------------------+------------------------+----------------------+----------------------+| test | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;claim_ttl&apos;: 30, u&apos;delay_ttl&apos;: 0, u&apos;_default_message_ttl&apos;: 345600&#125; | /v2/queues/test | 2017-10-16T03:32:49Z | 2017-10-16T03:32:49Z || test_queues | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;claim_ttl&apos;: 30, u&apos;delay_ttl&apos;: 0, u&apos;_default_message_ttl&apos;: 345600&#125; | /v2/queues/test_queues | 2017-10-16T03:32:54Z | 2017-10-16T03:32:54Z |+-------------+---------------------------------------------------------------------------------------------------------+------------------------+----------------------+----------------------+ 队列查询 根据队列的名字查询队列的详细信息。该操作输出包括队列的监控信息。命令为： 1openstack es-messaging queue-show &#123;queue_name&#125; 输出说明： Name: 队列名称。Metadata_Dict： 队列的元数据字典，包括生命周期，最大长度，延迟时间，独占时间。msg_counts： 非批量发送消息个数。msg_bytes： 非批量发送消息的大小。bulk_msg_counts：批量发送消息的个数。bulk_msg_bytes： 批量发送消息的大小。consume_msg_counts： 消费消息的个数。consume_msg_bytes： 消费消息的大小。active_msgs： 活动消息个数。inactive_msgs：非活动消息个数，指消费冷却时间中。delayed_msgs： 处于延迟状态消息的个数。deleted_msgs： 已删除的消息的个数。Created_at： 队列创建时间。Updated_at： 队列更新时间。 举例说明： 12345678910111213141516171819[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-show test+--------------------+---------------------------------------------------------------------------------------------------------+| Field | Value |+--------------------+---------------------------------------------------------------------------------------------------------+| Name | test || Metadata | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;claim_ttl&apos;: 30, u&apos;delay_ttl&apos;: 0, u&apos;_default_message_ttl&apos;: 345600&#125; || msg_counts | 0 || msg_bytes | 0.0 || bulk_msg_counts | 0 || bulk_msg_bytes | 0.0 || consume_msg_counts | 0 || consume_msg_bytes | 0.0 || active_msgs | 0 || inactive_msgs | 0 || delayed_msgs | 0 || deleted_msgs | 0 || Created_at | 2017-10-16T03:32:49Z || Updated_at | 2017-10-16T03:32:49Z |+--------------------+---------------------------------------------------------------------------------------------------------+ 队列清空 根据队列的名称清空队列里所有消息。命令为：1openstack es-messaging queue-purge &#123;queue_name&#125; 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-purge test 队列删除 根据队列名称删除队列，删除不存在的队列名也不会报错。命令为： 1openstack es-messaging queue-delete &#123;queue_name&#125; 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging queue-delete test 3.2 主题管理主题管理主要是针对消息服务中主题资源的生命周期管理，主要功能包括：主题创建，主题删除，主题查询，主题修改，主题监控。 主题创建 主题创建需要传递的参数主要是主题的名称，名称必须是项目里唯一，否则不会创建新的主题。命令为： 1openstack es-messaging topic-create &#123;topic_name&#125; 举例说明： 123456[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-create test+-------+-------+| Field | Value |+-------+-------+| Name | test |+-------+-------+ 主题更新 根据主题的名称更新主题的元数据，可更新的内容包括，最大长度，生命周期。 1openstack es-messaging topic-update &#123;topic_name&#125; &#123;topic_metadata&#125; 输入参数说明： topic_metadata: 元数据字典，可选。_max_messages_post_size：最大长度，可选。_default_message_ttl：生命周期，可选。 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-update test &apos;&#123;&quot;_max_messages_post_size&quot;: 233333&#125;&apos; 主题列表 查询主题的列表。支持detail参数，表明获取详细列表。命令为： 1openstack es-messaging topic-list --detail 输出说明： Name: 主题名称。Metadata_Dict：主题的元数据字典，包括生命周期，最大长度。Href：资源链接，暂时无意义。Created_at：主题创建时间，utc时间。Updated_at：主题的更新时间，utc时间，初始化和创建时间相同。 举例说明： 123456789101112131415[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-list+-------+| Name |+-------+| test || test1 |+-------+[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-list --detail+-------+---------------------------------------------------------------------+------------------+----------------------+----------------------+| Name | Metadata_Dict | Href | Created_at | Updated_at |+-------+---------------------------------------------------------------------+------------------+----------------------+----------------------+| test | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;_default_message_ttl&apos;: 86400&#125; | /v2/topics/test | 2017-10-13T08:00:49Z | 2017-10-13T08:00:49Z || test1 | &#123;u&apos;_max_messages_post_size&apos;: 65536, u&apos;_default_message_ttl&apos;: 86400&#125; | /v2/topics/test1 | 2017-10-16T04:15:21Z | 2017-10-16T04:15:21Z |+-------+---------------------------------------------------------------------+------------------+----------------------+----------------------+ 主题查询 根据主题的名字查询主题的详细信息。该操作输出包括主题的监控信息。命令为： 1openstack es-messaging topic-show &#123;topic_name&#125; 输出说明： Name: 主题名称。Metadata_Dict：主题的元数据字典，包括生命周期，最大长度。msg_counts：非批量发布消息个数。msg_bytes：非批量发布消息的大小。bulk_msg_counts：批量发布消息的个数。bulk_msg_bytes：批量发布消息的大小。sub_msg_counts： 成功发送订阅终端消息的个数。sub_msg_bytes：成功发送订阅终端消息的大小。total_sub_msg_counts： 总的发送订阅终端消息个数，包括失败的。total_sub_msg_bytes： 总的发送订阅终端消息的大小，包括失败的。Created_at： 主题创建时间。Updated_at： 主题更新时间。 举例说明： 1234567891011121314151617[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-show test+----------------------+----------------------------------------------------------------------+| Field | Value |+----------------------+----------------------------------------------------------------------+| Name | test || Metadata | &#123;u&apos;_max_messages_post_size&apos;: 233333, u&apos;_default_message_ttl&apos;: 86400&#125; || msg_counts | 0 || msg_bytes | 0.0 || bulk_msg_counts | 0 || bulk_msg_bytes | 0.0 || sub_msg_counts | 0 || sub_msg_bytes | 0.0 || total_sub_msg_counts | 0 || total_sub_msg_bytes | 0.0 || Created_at | 2017-10-13T08:00:49Z || Updated_at | 2017-10-16T04:16:54Z |+----------------------+----------------------------------------------------------------------+ 主题删除 根据主题名称删除主题，删除不存在的主题名也不会报错。命令为： 1openstack es-messaging topic-delete &#123;topic_name&#125; 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging topic-delete test 3.3 订阅管理订阅管理主要是消息服务中对主题的订阅进行管理，主题被订阅后，发到主题的消息会根据订阅的终端进行分发，目前终端支持webhook和queue两种类型。 订阅创建 主题的订阅创建需要传递的参数主要是主题的名称，订阅终端，及options可选项。命令为： 1openstack es-messaging subscription-create &#123;topic_name&#125; &#123;subscriber&#125; --options 输入参数说明： subscriber: 订阅终端webhook：http://test.test.com，该调用方法为POST，body为消息体。&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;订阅终端queue：queue:{queue_name}，将消息直接转存到该queue中，元数据与queue相同，必选。options：订阅的元数据选项，该参数可以不选。如果不选默认push_policy=EXPONENTIAL_DECAY_RETRY。push_policy: 订阅的重试策略，在将消息发送给订阅终端的时候如果发送失败会进行重试，具体策略规则见设计文档，可选。tags：订阅的过滤标签，标签支持多个，目前没有限制，过滤规则见设计文档，可选。 举例说明：1234567891011121314151617[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-create test http://test.test.com+------------+----------------------------------------------+| Field | Value |+------------+----------------------------------------------+| ID | 59e4562424ed673f607dceb7 || Subscriber | http://test.test.com || Options | &#123;u&apos;push_policy&apos;: u&apos;EXPONENTIAL_DECAY_RETRY&apos;&#125; |+------------+----------------------------------------------+[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-create test queue:test --options &apos;&#123;&quot;push_policy&quot; : &quot;BACKOFF_RETRY&quot;, &quot;tags&quot; : [ &quot;test&quot;, &quot;test2&quot; ]&#125;&apos;+------------+------------------------------------------------------------------+| Field | Value |+------------+------------------------------------------------------------------+| ID | 59e44e0024ed673f277dcec3 || Subscriber | queue:test || Options | &#123;u&apos;push_policy&apos;: u&apos;BACKOFF_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |+------------+------------------------------------------------------------------+ 订阅更新 根据订阅的ID更新订阅的属性，目前可更新的属性有重试策略和标签。 1openstack es-messaging subscription-update &#123;topic_name&#125; &#123;subscription_id&#125; --options &#123;options&#125; 输入参数说明： topic_name: 主题名称，必选。subscription_id：订阅id，必选。options: 需要修改的属性，可选。push_policy: 订阅的重试策略，在将消息发送给订阅终端的时候如果发送失败会进行重试，具体策略规则见设计文档，可选。tags：订阅的过滤标签，标签支持多个，目前没有限制，过滤规则见设计文档，可选。 举例说明： 1234567[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-update test 59e4562424ed673f607dceb7 --options &apos;&#123;&quot;push_policy&quot; : &quot;EXPONENTIAL_DECAY_RETRY&quot;, &quot;tags&quot; : [ &quot;test&quot;, &quot;test2&quot; ]&#125;&apos; +---------+----------------------------------------------------------------------------+| Field | Value |+---------+----------------------------------------------------------------------------+| ID | 59e4562424ed673f607dceb7 || Options | &#123;u&apos;push_policy&apos;: u&apos;EXPONENTIAL_DECAY_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |+---------+----------------------------------------------------------------------------+ 订阅列表 查询主题订阅的列表。命令为： 1openstack es-messaging subscription-list &#123;topic_name&#125; 输出说明： ID: 订阅ID。Subscriber：订阅终端。Confirmed：订阅确认，目前暂不提供，默认不确认。Options：订阅属性。push_policy: 订阅的重试策略。tags：订阅的过滤标签，标签支持多个。 举例说明： 1234567[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-list test+--------------------------+----------------------+-----------+----------------------------------------------------------------------------+| ID | Subscriber | Confirmed | Options |+--------------------------+----------------------+-----------+----------------------------------------------------------------------------+| 59e44e0024ed673f277dcec3 | queue:test | False | &#123;u&apos;push_policy&apos;: u&apos;BACKOFF_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; || 59e4562424ed673f607dceb7 | http://test.test.com | False | &#123;u&apos;push_policy&apos;: u&apos;EXPONENTIAL_DECAY_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |+--------------------------+----------------------+-----------+----------------------------------------------------------------------------+ 订阅查询 根据主题的名字及订阅id查询主题订阅的的信息。命令为： 1openstack es-messaging subscription-show &#123;topic_name&#125; &#123;subscription_id&#125; 输出说明： ID: 订阅ID。Subscriber：订阅终端。Confirmed：订阅确认，目前暂不提供，默认不确认。Options：订阅属性。push_policy: 订阅的重试策略。tags：订阅的过滤标签，标签支持多个。 举例说明： 123456789[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-show test 59e44e0024ed673f277dcec3+------------+------------------------------------------------------------------+| Field | Value |+------------+------------------------------------------------------------------+| ID | 59e44e0024ed673f277dcec3 || Subscriber | queue:test || Confirmed | False || Options | &#123;u&apos;push_policy&apos;: u&apos;BACKOFF_RETRY&apos;, u&apos;tags&apos;: [u&apos;test&apos;, u&apos;test2&apos;]&#125; |+------------+------------------------------------------------------------------+ 订阅删除 根据主题名称及订阅ID删除订阅，删除不存在的订阅也不会报错。命令为： 1openstack es-messaging subscription-delete &#123;topic_name&#125; &#123;subscription_id&#125; 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging subscription-delete test 59e44e0024ed673f277dcec3 3.4 消息管理消息管理主要是消息服务中对消息的发送，消费，订阅等操作的处理。 向队列发送消息 向指定队列里发送消息，支持批量发送，必须指定client-id。命令为： 1openstack es-messaging message-post &#123;queue_name&#125; &#123;messages&#125; --client-id &#123;client-id&#125; 输入参数说明： queue_name: 发送消息的目标队列，必选。messages：消息列表，格式为JSON，必选。body: 消息体，必须存在。内容为JSON，必选。ttl：消息的生命周期，可选项。delay_ttl: 消息的延迟时间，可选项。client-id：发送消息的客户端id。必选项。 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging message-post test &apos;[&#123;&quot;body&quot;:&#123;&quot;yzy&quot;:&quot;test&quot;, &quot;msg&quot;: &quot;你好111111111111111&quot;&#125;, &quot;ttl&quot;: 63, &quot;delay_ttl&quot;: 30&#125;,&#123;&quot;body&quot;:&#123;&quot;yzy&quot;:&quot;test&quot;, &quot;msg&quot;: &quot;你好222222&quot;&#125;, &quot;ttl&quot;: 631, &quot;delay_ttl&quot;: 32&#125;]&apos; --client-id 38b4aee5-0a05-47f1-a627-f7c4c3e24382 队列中消息列表查询 根据队列的名称查询该队列中的所有消息。 1openstack es-messaging message-list &#123;queue_name&#125; --client-id &#123;client_id&#125; --echo --include-delayed --include-claimed --limit 1 输入参数说明： queue_name: 队列名称，必选。client-id：获取该client-id向该队列发送的消息，必选。echo: 如果为True则证明要获取该client的消息，否则获取除了该client的消息。默认为False，可选。include-delayed: 返回结果是否包括处于延迟状态的消息，可选。include-claimed：返回结果是否处于消费状态的消息，可选。limit：返回结果个数限制，可选。 输出说明： ID: 消息ID。TTL：消息生命周期。Age: 消息存活时间。Status: 消息当前状态，目前包括active（可消费），inactive（消费冷却中），delayed（延迟中）。Status_End_Time：状态过渡到active的时间，只有inactive和delay时有效。 举例说明： 12345678910111213[root@node-145 ~(keystone_admin)]# openstack es-messaging message-list test --client-id 38b4aee5-0a05-47f1-a627-f7c4c3e24382 --echo --include-delayed --include-claimed+--------------------------+------+-----+---------+----------------------+| ID | TTL | Age | Status | Status_End_Time |+--------------------------+------+-----+---------+----------------------+| 59e4721a24ed673f277dcec6 | 6300 | 3103| inactive| 2017-10-16T09:39:23Z || 59e4721a24ed673f277dcec7 | 6310 | 35 | active | -- || 59e4721d24ed673f277dcec8 | 6300 | 32 | active | -- || 59e4721d24ed673f277dcec9 | 6310 | 32 | active | -- || 59e4721f24ed673f277dceca | 6300 | 30 | active | -- || 59e4721f24ed673f277dcecb | 6310 | 30 | delayed | 2017-10-16T08:47:59Z || 59e4722224ed673f277dcecc | 6300 | 27 | delayed | 2017-10-16T08:48:00Z || 59e4722224ed673f277dcecd | 6310 | 27 | delayed | 2017-10-16T08:48:02Z |+--------------------------+------+-----+---------+----------------------+ 从队列中消费消息 从指定队列中消费消息，支持批量消费消息，支持自动删除消费消息。命令为： 1openstack es-messaging message-consume &#123;queue_name&#125; --limit &#123;limit&#125; --auto-delete &#123;1/0&#125; 输入参数说明： queue_name: 队列名称，必选。limit：消息消费的个数，可选。auto-delete: 如果为1则消费到的消息会被自动删除，默认为不删除，可选。 输出说明： Messages: 消费得到的消息体。Handle：消费的handle。Message_ID：消息ID。TTL：消息的生命周期。Age: 消息已经存活的时间。Times：消息被消费过的次数。Initial Time：消息的第一次消费时间，utc时间。Next Time：消息下一次可以消费的时间，只要当前时间大于该时间，则可以消费，utc时间。Created At：消息的创建时间，utc时间。 举例说明： 12345678[root@node-145 ~(keystone_admin)]# openstack es-messaging message-consume test --limit 3 --auto-delete 1+-----------------------------------------------------------+--------------------------+--------------------------+------+------+-------+----------------------+----------------------+----------------------+| Messages | Handle | Message_ID | TTL | Age | Times | Initial Time | Next Time | Created At |+-----------------------------------------------------------+--------------------------+--------------------------+------+------+-------+----------------------+----------------------+----------------------+| &#123;u&apos;msg&apos;: u&apos;\u4f60\u597d222222&apos;, u&apos;yzy&apos;: u&apos;test&apos;&#125; | 59e47b0524ed673f277dced1 | 59e4721a24ed673f277dcec7 | 6310 | 2284 | 1 | 2017-10-16T09:25:25Z | 2017-10-16T09:25:55Z | 2017-10-16T08:47:22Z || &#123;u&apos;msg&apos;: u&apos;\u4f60\u597d111111111111111&apos;, u&apos;yzy&apos;: u&apos;test&apos;&#125; | 59e47b0524ed673f277dced2 | 59e4721d24ed673f277dcec8 | 6300 | 2281 | 1 | 2017-10-16T09:25:25Z | 2017-10-16T09:25:55Z | 2017-10-16T08:47:25Z || &#123;u&apos;msg&apos;: u&apos;\u4f60\u597d222222&apos;, u&apos;yzy&apos;: u&apos;test&apos;&#125; | 59e47b0624ed673f277dced3 | 59e4721d24ed673f277dcec9 | 6310 | 2281 | 1 | 2017-10-16T09:25:25Z | 2017-10-16T09:25:55Z | 2017-10-16T08:47:25Z |+-----------------------------------------------------------+--------------------------+--------------------------+------+------+-------+----------------------+----------------------+----------------------+ 删除消息 根据消费的handle删除该消息，只有消费过的消息才能被删除，并且该handle没有过期，支持批量删除。命令为： 1openstack es-messaging message-delete &#123;queue_name&#125; &#123;message_handles&#125; 输入参数说明： queue_name: 队列名称，必选。message_handles：消息消费的handles，支持多个，多个用逗号隔开，必选。 输出说明： Expired: 过期的消息handle列表，删除失败。Invalid：错误的消息handle列表，删除失败。Success：删除成功的消息handle列表。 举例说明： 12345678[root@node-145 ~(keystone_admin)]# openstack es-messaging message-delete test 59e47e8424ed673f607dcebb,59e47e8424ed673f607dcebc,59e47e8424ed673f607dcebs+---------+------------------------------------------------------------+| Field | Value |+---------+------------------------------------------------------------+| Expired | [u&apos;59e47e8424ed673f607dcebb&apos;] || Invalid | [u&apos;59e47e8424ed673f607dcebs&apos;] || Success | [u&apos;59e47e8424ed673f607dcebc&apos;] |+---------+------------------------------------------------------------+ 向主题发布消息 向指定主题发送消息，支持批量。如果有订阅者，则订阅者会接收到该消息，如果订阅终端为webhook，则要求存在该WEB-Service，否则无法成功订阅。命令为： 1openstack es-messaging message-publish &#123;topic_name&#125; &#123;messages&#125; --client-id &#123;client-id&#125; 输入参数说明： topic_name: 主题名称，必选。messages：消息列表，格式为JSON，必选。body: 消息体，必须存在。内容为JSON，必选。tags：消息的过滤标签，可选项。client-id：发送消息的客户端id。必选项。 举例说明： 1[root@node-145 ~(keystone_admin)]# openstack es-messaging message-publish test &apos;[&#123;&quot;body&quot;:&#123;&quot;yzy&quot;:&quot;test&quot;&#125;,&quot;tags&quot;: [&quot;test&quot;]&#125;]&apos; --client-id 38b4aee5-0a05-47f1-a627-f7c4c3e24382]]></content>
+      <categories>
+        <category>Zaqar</category>
+      </categories>
+      <tags>
+        <tag>Openstack</tag>
+        <tag>Zaqar</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[openstack开发中单元测试调试方法]]></title>
+    <url>%2Fblog%2F2017-10-12-zaqar-unit-test%2F</url>
+    <content type="text"><![CDATA[在对openstack的组件进行开发时，尤其是要贡献社区时，单元测试是必须要编写的，openstack的每个模块基本都大同小异，下面就以zaqar作为例子来说明如何调试。 将zaqar的代码拷贝或者clone到运行单元测试的服务器上，运行测试时会自动在zaqar目录下创建.tox文件夹，并且安装依赖。1git clone https://github.com/openstack/zaqar.git 注意：这几个文件比较重要，执行单元测试时会用到：.testr.conf .coveragerc .git 执行单元测试时需要保证本地具有mongo或者redis服务，并且为单节点没有认证。 执行单元测试命令 12cd zaqartox -e py27,pep8 &gt; test.log 或者 12cd zaqartox -e integration &gt; test.log 如果自己需要添加或者修改单元测试，可以通过print打印调试： 123456789101112131415161718class ClaimControllerTest(ControllerBaseTest): ... def test_delay_queue(self): meta = &#123;'ttl': 1, 'grace': 0&#125; # Set delay queeu metadata metadata = &#123;"_delay_ttl": 5&#125; self.queue_controller.set_metadata(self.queue_name, metadata, project=self.project) queue_delay = self.queue_controller.get_metadata(self.queue_name, project=self.project) queue_delay_ttl = queue_delay.get('_delay_ttl') print queue_delay_ttl ... 之后继续执行前面的命令，然后在test.log中可以看到输出]]></content>
+      <categories>
+        <category>Zaqar</category>
+      </categories>
+      <tags>
+        <tag>Openstack</tag>
+        <tag>Zaqar</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[使用hexo搭建个人博客（转）]]></title>
+    <url>%2Fblog%2F2016-10-10-hexo-blog%2F</url>
+    <content type="text"><![CDATA[使用Hexo安装1234mkdir hexo #创建一个文件夹cd hexonpm install -g hexo-clinpm install hexo --save 部署Hexo在Git shell 中输入1hexo init 安装Hexo插件：自动生成sitemap,Rss，部署到git等，建议安装12345678910111213npm install hexo-generator-index --savenpm install hexo-generator-archive --savenpm install hexo-generator-category --savenpm install hexo-generator-tag --savenpm install hexo-server --savenpm install hexo-deployer-git --savenpm install hexo-deployer-heroku --savenpm install hexo-deployer-rsync --savenpm install hexo-deployer-openshift --savenpm install hexo-renderer-marked@0.2 --savenpm install hexo-renderer-stylus@0.2 --savenpm install hexo-generator-feed@1 --savenpm install hexo-generator-sitemap@1 --save 如果国内网络不好，可以使用淘宝的npm源1npm install -g cnpm --registry=https://registry.npm.taobao.org 然后将上面要装的插件命令中的npm都替换为cnpm Hexo常用的几个命令创建新博文执行new命令，生成指定名称的文章至hexo\source_posts\postName.md。 1hexo new [layout] &quot;postName&quot; #新建文章 其中layout是可选参数，默认值为post。有哪些layout呢，请到scaffolds目录下查看，这些文件名称就是layout名称。当然你可以添加自己的layout，方法就是添加一个文件即可，同时你也可以编辑现有的layout，比如post的layout默认是hexo\scaffolds\post.md1234title: &#123; &#123; title &#125; &#125;date: &#123; &#123; date &#125; &#125;tags:--- 请注意，大括号与大括号之间我多加了个空格，否则会被转义，不能正常显示。 我想添加categories，以免每次手工输入，只需要修改这个文件添加一行，如下： 12345title: &#123; &#123; title &#125; &#125;date: &#123; &#123; date &#125; &#125;categories: tags: --- 更多信息参考: Writing 运行服务器1$ hexo server #或者 hexo s 参考: Server 生成静态站点文件1$ hexo generate #或者 hexo g 参考: Generating 部署到Git部署到Github前需要配置_config.yml文件 添加如下内容： 1234deploy: type: git repository: git@github.com:cdyangzhenyu/cdyangzhenyu.github.io.git branch: master 然后输入：1$ hexo deploy #或者 hexo d 参考: Deployment fancybox如果想要给添加图片，则可以使用fancybox，这个是怎么做的呢。很简单，只需要在你的文章*.md文件的头上添加photos项即可，然后一行行添加你要展示的照片:12345title: photos:- http://bruce.u.qiniudn.com/2013/11/27/reading/photos-0.jpg- http://bruce.u.qiniudn.com/2013/11/27/reading/photos-1.jpg--- 主题设置本博客采用了iissnan的Next主题，他的博客有详细的安装教程，这里贴下链接next，有需要的朋友直接参考他写的教程，一气呵成~ 下载主题12$ cd hexo目录$ git clone https://github.com/iissnan/hexo-theme-next themes/next 应用Hexo主题在hexo目录下找到_config.yml配置文件，找到theme字段，并将其值更改为 next，如下所示： 1theme: next 设置RSS在上面的步骤中已经安装了Rss插件，只要要在themes\next_config.yml配置文件中添加如下一行即可： 1rss： 添加标签tags页面定位到Hexo站点目录下，使用hexo new page新建一个页面，命名为tags，布局格式为page： 12$ cd hexo目录$ hexo new page tags 内容如下所示，如果要关闭tags页面的评论可以设置comments为false：12345title: 标签date: 2014-12-22 12:39:04type: &quot;tags&quot;comments: false--- 这样以后tags页面在每次执行hexo generate后自动更新。 添加分类页面和上面的一样，在hexo目录下执行下面命令：1$ hexo new page categories 内容为：12345title: 分类date: 2014-12-22 12:39:04type: &quot;categories&quot;comments: false--- 添加404页面新建一个404.html文件，放到themes\next\source目录下，内容你自己定。 代码高亮Hexo下只需要按照下面的格式： 效果如下：1System.out.println(&quot;hello hexo!&quot;); 你也可以更改代码高亮的主题，一共有五种，可选的值有normal， night， night blue， night bright， night eighties，修改themes\next_config.yml文件，如下所示： 1highlight_theme: normal 第三方服务多说评论登录多说官网，登录后点我要安装，然后填写站点相关信息，最主要的是duoshuo_shortname这个字段，设置后之后修改themes\next_config.yml文件，把duoshuo_shortname改成你的，如下所示： 1duoshuo_shortname: aiven 百度统计登录百度统计，转到获取代码截面，找到百度统计脚本id，然后把themes\next_config.yml文件下的baidu_analytics字段改成你的id，如下所示： 1baidu_analytics: 340874ba9357cbe81570aa4ac1185941 站内搜索next主题集成了swiftype搜索，你需要到swiftype配置一个搜索引擎， 而后编辑 站点配置文件， 新增swiftype_key字段，值为你的swiftype搜索引擎的key。 详细的配置请参考：swfitype教程 其他设置其他设置比如侧边栏、友情链接、菜单栏等请参考next主题配置教程 最后附上我的站点配置文件，如果有不懂的可以给我留言或者发邮件。_config.yml配置文件内容如下： 站点配置文件：12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273# Hexo Configuration## Docs: http://hexo.io/docs/configuration.html## Source: https://github.com/hexojs/hexo/# Sitetitle: aiven&apos;s blogsubtitle:description: aivenauthor: aivenlanguage: zh-Hanstimezone: Asia/Shanghai# URL## If your site is put in a subdirectory, set url as &apos;http://yoursite.com/child&apos; and root as &apos;/child/&apos;url: http://www.aiven.comroot: /permalink: /blog/:year/:month/:title.htmlpermalink_defaults:# Directorysource_dir: sourcepublic_dir: publictag_dir: tagsarchive_dir: archivescategory_dir: categoriescode_dir: downloads/codei18n_dir: :langskip_render:# Writingnew_post_name: :year-:month-:day-:title.md # File name of new postsdefault_layout: posttitlecase: false # Transform title into titlecaseexternal_link: true # Open external links in new tabfilename_case: 0render_drafts: falsepost_asset_folder: falserelative_link: falsefuture: truehighlight: enable: true line_number: true auto_detect: true tab_replace:# Category &amp; Tagdefault_category: uncategorizedcategory_map:tag_map:# Date / Time format## Hexo uses Moment.js to parse and display date## You can customize the date format as defined in## http://momentjs.com/docs/#/displaying/format/date_format: YYYY-MM-DDtime_format: HH:mm:ss# Pagination## Set per_page to 0 to disable paginationper_page: 10pagination_dir: page# Extensions## Plugins: http://hexo.io/plugins/## Themes: http://hexo.io/themes/theme: next #since: 2014# Deployment## Docs: http://hexo.io/docs/deployment.htmldeploy: type: git repository: git@github.com:cdyangzhenyu/cdyangzhenyu.github.io.git coding.net: git@git.coding.net:xxx/xxx.git,coding-pages 主题配置文件：123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137138139140141142143144145146147148149150151152153154155156157158159160161162163164165166167168169170171172173174175176177178179180181182183184185186187188189190191192193194195196197198199200201202203204205206207208209210211212213214215216217218219220221222223224225226227228# ---------------------------------------------------------------# Site Information Settings# ---------------------------------------------------------------# Place your favicon.ico to /source directory.favicon: /favicon.ico# Set default keywords (Use a comma to separate)keywords: &quot;Hexo, NexT&quot;# Set rss to false to disable feed link.# Leave rss as empty to use site&apos;s feed link.# Set rss to specific value if you have burned your feed already.rss:# Specify the date when the site was setupsince: 2014# ---------------------------------------------------------------# Menu Settings# ---------------------------------------------------------------# When running hexo in a subdirectory (e.g. domain.tld/blog)# Remove leading slashes ( &quot;/archives&quot; -&gt; &quot;archives&quot; )menu: home: / categories: /categories archives: /archives tags: /tags about: /about# commonweal: /404.html# Enable/Disable menu icons.# Icon Mapping:# Map a menu item to a specific FontAwesome icon name.# Key is the name of menu item and value is the name of FontAwsome icon.# When an question mask icon presenting up means that the item has no mapping icon.menu_icons: enable: true # Icon Mapping. home: home about: user categories: th tags: tags archives: archive commonweal: heartbeat# ---------------------------------------------------------------# Scheme Settings# ---------------------------------------------------------------# Schemes#scheme: Musescheme: Mist#scheme: Pisces# ---------------------------------------------------------------# Sidebar Settings# ---------------------------------------------------------------# Social linkssocial: GitHub: https://github.com/xxx weibo: http://weibo.com/xxx zhihu: http://www.zhihu.com/people/xxx #Others:# Social Iconssocial_icons: enable: true # Icon Mappings GitHub: github Twitter: twitter weibo: weibo zhihu: weibo # Sidebar Avatar# in theme directory(source/images): /images/avatar.jpg# in site directory(source/uploads): /uploads/avatar.jpg# default : /images/default_avatar.jpgavatar: /images/avatar.jpg# TOC in the Sidebartoc: enable: true # Automatically add list number to toc. number: true# Creative Commons 4.0 International License.# http://creativecommons.org/# Available: by | by-nc | by-nc-nd | by-nc-sa | by-nd | by-sa | zero#creative_commons: by-nc-sa#creative_commons:sidebar: # Sidebar Position, available value: left | right position: left #position: right # Sidebar Display, available value: # - post expand on posts automatically. Default. # - always expand for all pages automatically # - hide expand only when click on the sidebar toggle icon. # - remove Totally remove sidebar including sidebar toggle icon. display: post #display: always #display: hide #display: remove# ---------------------------------------------------------------# Misc Theme Settings# ---------------------------------------------------------------# Custom Logo.# !!Only available for Default Scheme currently.# Options:# enabled: [true/false] - Replace with specific image# image: url-of-image - Images&apos;s urlcustom_logo: enabled: false image:# Code Highlight theme# Available value:# normal | night | night eighties | night blue | night bright# https://github.com/chriskempson/tomorrow-themehighlight_theme: night # Automatically scroll page to section which is under &lt;!-- more --&gt; mark.scroll_to_more: true# Automatically Excerptauto_excerpt: enable: false length: 150# Use Lato fontuse_font_lato: true# ---------------------------------------------------------------# Third Party Services Settings# ---------------------------------------------------------------# MathJax Supportmathjax:# Swiftype Search API Keyswiftype_key: fLM9qfxyerC6njvM7usy# Baidu Analytics IDbaidu_analytics: 340874ba9357cbe81570aa4ac1185941# Duoshuo ShortNameduoshuo_shortname: xxx # Disqus#disqus_shortname:# Share#jiathis:#add_this_id:# Shareduoshuo_share: true# 多说热评文章 true 或者 falseduoshuo_hotartical: true# Google Webmaster tools verification setting# See: https://www.google.com/webmasters/#google_site_verification:# Google Analytics#google_analytics:# Make duoshuo show UA# user_id must NOT be null when admin_enable is true!# you can visit http://dev.duoshuo.com get duoshuo user id.duoshuo_info: ua_enable: true admin_enable: false user_id: 0 #admin_nickname: ROOT# Facebook SDK Support.# https://github.com/iissnan/hexo-theme-next/pull/410facebook_sdk: enable: false app_id: #&lt;app_id&gt; fb_admin: #&lt;user_id&gt; like_button: #true webmaster: #true# Show number of visitors to each article.# You can visit https://leancloud.cn get AppID and AppKey.leancloud_visitors: enable: false app_id: #&lt;app_id&gt; app_key: #&lt;app_key&gt;# Tencent analytics ID# tencent_analytics:#! ---------------------------------------------------------------#! DO NOT EDIT THE FOLLOWING SETTINGS#! UNLESS YOU KNOW WHAT YOU ARE DOING#! ---------------------------------------------------------------# Motionuse_motion: true# Fancyboxfancybox: true# Static filesvendors: vendorscss: cssjs: jsimages: images# Theme versionversion: 0.5.0# title, chinese availablelinks_title: 友情链接 # # linkslinks: MacTalk: http://macshuo.com/]]></content>
+      <categories>
+        <category>Hexo</category>
+      </categories>
+      <tags>
+        <tag>Git Pages</tag>
+        <tag>Hexo</tag>
+        <tag>Hexo Next</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Git操作手册|命令速查表（转）]]></title>
+    <url>%2Fblog%2F2014-10-12-git-guide%2F</url>
+    <content type="text"><![CDATA[这篇文章主要介绍Git分布式版本管理与集中式管理的一些差异，总结下Git常用命令作为日后的速查表，最后介绍Git进阶的一些案例。本文分为以下几个部分： Git与SVN差异 Git常用命令 Git进阶指南 Git与SVN差异 Git的第一个版本是Linux之父Linus Torvalds亲手操刀设计和实现的,Git 基于 DAG 结构 (Directed Acyclic Graph)，其运行起来相当的快,它已经是现在的主流。 Git 和 SVN 思想最大的差别有四个： 去中心化 直接记录快照，而非差异 不一样的分支概念 三个文件状态 去中心化 Git是一个DVCS（分布式版本管理系统），在技术层面上并不存在一个像中心仓库这样的东西 ， 所有的数据都在本地，不存在谁是中心 Git使用SHA-1算法计算数据的校验和，通过文件的内容或目录计算出SHA-1哈希值，作为指纹字符串，每个Version 都是一个快照。 不一样的分支概念 Git的分支本质是一个指向提交快照的指针，是从某个提交快照往回看的历史。当创建/切换分支的时候，只是变换了指针指向而已.而SVN创建一个分支， 是的的确确的复制了一份文件。 三个文件状态 在Git中文件有三种状态： 已提交（committed）：该文件被安全地保存在了本地数据库 已修改（modified）：修改了某个文件，但还没有保存 已暂存（staged）：把已修改的文件放下下次保存的清单中 Git常用命令创建复制一个已创建的仓库: $ git clone ssh://user@domain.com/repo.git 创建一个新的本地仓库: $ git init 本地修改显示工作路径下已修改的文件： $ git status 显示与上次提交版本文件的不同： $ git diff 把当前所有修改添加到下次提交中： $ git add 把对某个文件的修改添加到下次提交中： $ git add -p &lt;file&gt; 提交本地的所有修改： $ git commit -a 提交之前已标记的变化： $ git commit 附加消息提交： $ git commit -m &apos;message here&apos; 提交，并将提交时间设置为之前的某个日期: git commit --date=&quot;`date --date=&apos;n day ago&apos;`&quot; -am &quot;Commit Message&quot; 修改上次提交请勿修改已发布的提交记录! $ git commit --amend 把当前分支中未提交的修改移动到其他分支 git stash git checkout branch2 git stash pop 搜索从当前目录的所有文件中查找文本内容： $ git grep &quot;Hello&quot; 在某一版本中搜索文本： $ git grep &quot;Hello&quot; v2.5 提交历史从最新提交开始，显示所有的提交记录（显示hash， 作者信息，提交的标题和时间）： $ git log 显示所有提交（仅显示提交的hash和message）： $ git log --oneline 显示某个用户的所有提交： $ git log --author=&quot;username&quot; 显示某个文件的所有修改： $ git log -p &lt;file&gt; 谁，在什么时间，修改了文件的什么内容： $ git blame &lt;file&gt; 分支与标签列出所有的分支： $ git branch 切换分支： $ git checkout &lt;branch&gt; 创建并切换到新分支: $ git checkout -b &lt;branch&gt; 基于当前分支创建新分支： $ git branch &lt;new-branch&gt; 基于远程分支创建新的可追溯的分支： $ git branch --track &lt;new-branch&gt; &lt;remote-branch&gt; 删除本地分支: $ git branch -d &lt;branch&gt; 给当前版本打标签： $ git tag &lt;tag-name&gt; 更新与发布列出当前配置的远程端： $ git remote -v 显示远程端的信息： $ git remote show &lt;remote&gt; 添加新的远程端： $ git remote add &lt;remote&gt; &lt;url&gt; 下载远程端版本，但不合并到HEAD中： $ git fetch &lt;remote&gt; 下载远程端版本，并自动与HEAD版本合并： $ git remote pull &lt;remote&gt; &lt;url&gt; 将远程端版本合并到本地版本中： $ git pull origin master 将本地版本发布到远程端： $ git push remote &lt;remote&gt; &lt;branch&gt; 删除远程端分支： $ git push &lt;remote&gt; :&lt;branch&gt; (since Git v1.5.0) 或 git push &lt;remote&gt; --delete &lt;branch&gt; (since Git v1.7.0) 发布标签: $ git push --tags 合并与重置将分支合并到当前HEAD中： $ git merge &lt;branch&gt; 将当前HEAD版本重置到分支中:请勿重置已发布的提交! $ git rebase &lt;branch&gt; 退出重置: $ git rebase --abort 解决冲突后继续重置： $ git rebase --continue 使用配置好的merge tool 解决冲突： $ git mergetool 在编辑器中手动解决冲突后，标记文件为已解决冲突 $ git add &lt;resolved-file&gt; $ git rm &lt;resolved-file&gt; 撤销放弃工作目录下的所有修改： $ git reset --hard HEAD 移除缓存区的所有文件（i.e. 撤销上次git add）: $ git reset HEAD 放弃某个文件的所有本地修改： $ git checkout HEAD &lt;file&gt; 重置一个提交（通过创建一个截然不同的新提交） $ git revert &lt;commit&gt; 将HEAD重置到指定的版本，并抛弃该版本之后的所有修改： $ git reset --hard &lt;commit&gt; 将HEAD重置到上一次提交的版本，并将之后的修改标记为未添加到缓存区的修改： $ git reset &lt;commit&gt; 将HEAD重置到上一次提交的版本，并保留未提交的本地修改： $ git reset --keep &lt;commit&gt; Git进阶指南问：如何修改 origin 仓库信息？1、添加 origin 仓库信息git remote add origin &lt;git仓库地址&gt; 2、查看 origin 仓库信息# 以下三种方式均可 git config get --remote.origin.url git remote -v git remote show origin 3、删除 origin 仓库信息git remote rm origin 问：如何配置 git ssh keys ？在本地生成 ssh 私钥 / 公钥 文件将「公钥」添加到 git 服务（github、gitlab、coding.net 等）网站后台测试 git ssh 连接是否成功接下来以添加 github ssh keys 为例，请注意替换 github 文件名。 注：如果对密钥机制不熟悉，建议不要指定 -f 参数，直接使用默认的 id_rsa 文件名。 # 运行以下命令，一直回车，文件名可随意指定 ssh-keygen -t rsa -b 4096 -C &quot;kaiye@macbook&quot; -f ~/.ssh/github # 如果不是默认密钥 id_rsa ，则需要以下命令注册密钥文件，-K 参数将密钥存入 Mac Keychain ssh-add -K ~/.ssh/github # 将 pub 公钥的内容粘贴到线上网站的后台 cat ~/.ssh/github.pub # 测试 git ssh 是否连接成功 ssh -T git@github.com 问：如何撤销修改？ 修改包含四种情况，需单独区分。 1、新建的文件和目录，且从未提交至版本库 此类文件的状态为 Untracked files ，撤销方法如下： git clean -fd . 其中，. 表示当前目录及所有子目录中的文件，也可以直接指定对应的文件路径，以下其他情况类似。 2、提交过版本库，但未提交至暂存区的文件（未执行 git add） 此类文件的状态为Changes not staged for commit，撤销方法： git checkout . 3、已提交至暂存区的文件 此类文件的状态为 Changes to be committed，撤销方法： git reset . 执行之后文件将会回到以上的 1 或者 2 状态，可继续按以上步骤执行撤销，若 git reset 同时加上 –hard 参数，将会把修改过的文件也还原成版本库中的版本。 4、已提交至版本库（执行了 git commit） 每次提交都会生成一个 hash 版本号，通过以下命令可查阅版本号并将其回滚： git log git reset &lt;版本号&gt; 如果需要「回滚至上一次提交」，可直接使用以下命令： git reset head~1 执行之后，再按照 1 或者 2 状态进行处理即可，如果回滚之后的代码同时需要提交至 origin 仓库（即回滚 origin 线上仓库的代码），需要使用 -f 强制提交参数，且当前用户需要具备「强制提交的权限」。 5、如果回滚了之后又不想回滚了怎么办？ 如果是以上的情况 1 或者 2，只能歇屁了，因为修改没入过版本库，无法回滚。 如果是情况 4，回滚之后通过 git log 将看不到回滚之前的版本号，但可通过 git reflog 命令（所有使用过的版本号）找到回滚之前的版本号，然后 git reset &lt;版本号&gt; 。 问：遇到冲突了怎么解决？ 两个分支进行合并时（通常是 git pull 时），可能会遇到冲突，同时被修改的文件会进入 Unmerged 状态，需要解决冲突。 1、最快的办法 大部分时候，「最快解决冲突」的办法是：使用当前 HEAD 的版本（ours），或使用合并进来的分支版本（theirs）。 # 使用当前分支 HEAD 版本，通常是冲突源文件的 &lt;&lt;&lt;&lt;&lt;&lt;&lt; 标记部分，======= 的上方 git checkout --ours &lt;文件名&gt; # 使用合并分支版本，通常是源冲突文件的 &gt;&gt;&gt;&gt;&gt;&gt;&gt; 标记部分 git checkout --theirs &lt;文件名&gt; # 标记为解决状态加入暂存区 git add &lt;文件名&gt; 2、最通用的办法 用编辑器打开冲突的源文件进行修改，可能会发生遗留，且体验不好，通常需要借助 git mergetool 命令。 在 Mac 系统下，运行 git mergetool &lt;文件名&gt; 可以开启配置的第三方工具进行 merge，默认的是 FileMerge 应用程序，还可以配置成 Meld 或 kdiff3，体验更佳。 3、最好的习惯 有三个好的习惯，可以减少代码的冲突： 在开始修改代码前先 git pull 一下； 将业务代码进行划分，尽量不要多个人在同一时间段修改同一文件； 通过Gitflow 工作流也可以提升 git流程效率，减少发生冲突的可能性。 4、最复杂的情况 如果你的项目周期比较长，还应该养成「定期 rebase 的习惯」，git pull –rebase 可以让分支的代码和 origin 仓库的代码保持兼容，同时还不会破坏线上代码的可靠性。 它的大概原理是，先将 origin 仓库的代码按 origin 的时间流在本地分支中提交，再将本地分支的修改记录追加到 origin 分支上。如果发生冲突，则可以即时的发现问题并解决，否则到项目上线时再解决冲突，可能会发生额外的风险。 rebase 大概的操作步骤如下： # 将当前分支的版本追加到从远程 pull 回来的节点之后 git pull --rebase # 若发生冲突，则按以上其他方法进行解决，解决后继续 git rebase --continue # 直到所有冲突得以解决，待项目最后上线前再执行 git push origin # 若多次提交修改了同一文件，可能需要直接跳过后续提交，按提示操作即可 git rebase --skip 问：如何在不提交修改的前提下，执行 pull / merge 等操作？ 有些修改没有完全完成之前，可能不需要提交到版本库，圡方法是将修改的文件 copy 到 git 仓库之外的目录临时存放，pull / merge 操作完成之后，再 copy 回来。 这样的做法一个是效率不高，另外一个可能会遗漏潜在的冲突。此类需求最好是通过 git stash 命令来完成，它可以将当前工作状态（WIP，work in progress）临时存放在 stash 队列中，待操作完成后再从 stash 队列中重新应用这些修改。 以下是 git stash 常用命令： # 查看 stash 队列中已暂存了多少 WIP git stash list # 恢复上一次的 WIP 状态，并从队列中移除 git stash pop # 添加当前 WIP，注意：未提交到版本库的文件会自动忽略，只要不运行 git clean -fd . 就不会丢失 git stash # 恢复指定编号的 WIP，同时从队列中移除 git stash pop stash@{num} # 恢复指定编号的 WIP，但不从队列中移除 git stash apply stash@{num} 问：如何在 git log 中查看修改的文件列表？ 默认的 git log 会显示较全的信息，且不包含文件列表。使用 –name-status 可以看到修改的文件列表，使用 –oneline 可以将参数简化成一行。 git log --name-status --oneline 每次手动加上参数很麻烦，可以通过自定义快捷命令的方式来简化操作： git config --global alias.ls &apos;log --name-status --oneline --graph&apos; 运行以上配置后，可通过 git ls 命令来实现「自定义 git log」效果，通过该方法也可以创建 git st 、 git ci 等一系列命令，以便沿用 svn 命令行习惯。 git config --global alias.st &apos;status --porcelain&apos; 更多 git log 参数，可通过 git help log 查看手册。 如果是看上一次提交的版本日志，直接运行 git show 即可。 此外，如果你的 Mac 安装了zsh（参考《全新Mac安装指南（编程篇），那么可以直接使用 gst、glog 等一系列快捷命令，详情见此列表：Plugin:git 。 问：git submodule update 时出错怎么解决？ 例如，在执行 git submodule update 时有以下错误信息： fatal: reference is not a tree: f869da471c5d8a185cd110bbe4842d6757b002f5Unable to checkout ‘f869da471c5d8a185cd110bbe4842d6757b002f5’ in submodule path ‘source/i18n-php-server’ 在此例中，发生以上错误是因为 i18n-php-server 子仓库在某电脑 A 的「本地」commit 了新的版本 「f869da471c5d8a185cd110bbe4842d6757b002f5」，且该次 commit 未 push origin。但其父级仓库 i18n-www 中引用了该子仓库的版本号，且将引用记录 push origin，导致其他客户机无法 update 。 解决方法，在电脑 A 上将 i18n-php-server 版本库 push origin 后，在其他客户机上执行 git submodule update 。或者用以上提到的 git reset 方法，将子仓库的引用版本号还原成 origin 上存在的最新版本号。 其他问题 设置本地分支与远程分支保持同步，在第一次 git push 的时候带上 -u 参数即可 git push origin master -u 支持中文目录与文件名的显示（git 默认将非 ASCII 编码的目录与文件名以八进制编码展示） git config core.quotepath off 常用的打 tag 操作，更多请查看《Git 基础 - 打标签》 # 列出所有本地 tag git tag # 本地新增一个 tag，推送至 origin 服务器 git tag -a v1.0.0 -m &apos;tag description&apos; git push origin v1.0.0 # 删除本地与 origin tag git tag -d v1.0.0 git push origin --delete v1.0.0 使用 git GUI 客户端（如，SoureTree、Github Desktop）能极大的提升分支管理效率。分支合并操作通常只有两种情况：从 origin merge 到本地，使用 git pull 即可；从另外一个本地分支 merge 到当前分支，使用 git merge &lt;分支名&gt;，以下是常用命令： # 新建分支 branch1，并切换过去 git checkout -b branch1 # 查看所有本地与远程分支 git branch -a # 修改完成后，切换回 master 分支，将 branch1 分支合并进来 git checkout master git merge branch1 # 删除已完成合并的分支 branch1 git branch -d branch1 参考资料 Pro Git 简体中文版 Git权威指南 命令行man手册]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>Git</tag>
+        <tag>SVN</tag>
+        <tag>VCS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[openstack社区贡献方法]]></title>
+    <url>%2Fblog%2F2014-04-12-openstack-contribution%2F</url>
+    <content type="text"><![CDATA[本人从2012年开始一直在从事openstack相关的开发工作，但大多时候都是基于公司的需求在openstack上做二次开发。一直也没有时间贡献社区，最近想把一些修改提交到社区上，所以也摸索了社区的贡献方式，现在整理如下。 贡献前期准备注册OpenID为社区做贡献之前先要注册所需要的账号，这个账号可以作为gerrit和launchpad的单点登录账号。点击这里注册 登录Gerrit使用刚创建的账号登录Gerrit并设置唯一用户名，点击这里登录。Gerrit是代码review和commit管理的工具，在做贡献时要经常使用，可以通过该工具查看提交的贡献是否被review，是否通过单元测试，是否已经合并，等等。 上传SSH key在刚才的Gerrit中设置上传代码的SSH key，这里可以使用keygen进行生成，这里与github或者gitlab设置的方法一样，具体就不细说了。点击这里上传 配置本地git环境向社区提交代码肯定少不了git的使用和安装，社区的代码都是托管在github上，具体地址点击这里 下面设置用户名和邮箱地址，这里与前面注册时相同即可。 12git config --global user.name &quot;Firstname Lastname&quot;git config --global user.email &quot;your_email@youremail.com&quot; 查看是否设置成功 1git config --list 安装git review工具git review工具是用来提交代码的，这里我们不会使用git push进行提交，git review可以将代码展现到Gerrit中，并让其他贡献者进行代码的review。 可以使用pip进行安装 1pip install git-review 新项目贡献clone项目1git clone https://git.openstack.org/openstack/&lt;projectname&gt;.git 进入项目目录，并初始化Gerrit，Gerrit会在提交代码后，自动加上Change-id，这个id是每一个提交的唯一ID，只要id相同，则在任何地方提交，都不会出现问题。 12cd &lt;projectname&gt;git review -s 配置git账号，这里yourgerritusername必须使用前面在gerrit上设置的用户名。 1git config --global gitreview.username yourgerritusername 代码提交流程 上图是社区代码的贡献流程，前面我们已经讲了前期准备以及clone代码等。接下来我们结合上图讲解代码的提交流程。 社区代码贡献一般分为两类，一种是bug的修复，一种是blueprint。无论是哪种的提交，都是有很多共同点的。 首先都需要基于master创建独立的分支 本地master必须保证和上游的最新状态同步 同步之后可以使用rebase更新对应的分支 提交信息里需要有对应的bug id或者blueprint的名称 社区bug修复要想知道目前组件有哪些bug需要修复，可在每个组件对应的launchpad的bug管理页面查看，比如nova的bug list，可以在上面找一些目前还没有人修复的bug进行修复。 当然也可以自己提交bug，并且自己修复。自己创建的bug可以assign给自己，并且修改状态为开始。当然一般需要组件的管理员确认该bug是否存在。 对于贡献社区的新手来说，修改bug是比较好的选择，可以通过修复简单的bug来熟悉社区的贡献流程。 在bug修复时，首先需要创建bug对应的分支，一般都是使用bug的id作为分支名称，下面以1111111为id举例： 12git branch Bug1111111git checkout Bug1111111 修改完代码之后进行提交 1git commit -am &quot;Fix some bug&quot; 此时，Gerrit会自动给该commit添加change-id。如果后续有修复，则需要使用--amend追加到之前的commit中。 1git commit --amend 上面的命令会打开文件编辑，在里面添加bug描述信息和bug-id信息: 123456Fix som bugThis bug can affect some thing.Closes-Bug: #1111111Change-id: Idxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 修改之后没有问题了，可以进行提交： 1git review 社区blueprint提交blueprint对应一个独立的新功能，类似我们平时产品的一个独立需求。在向社区提交独立功能之前需要先提交一个blueprint作为记录。以nova为例，查看目前nova存在的blueprint list。 一般提交完blueprint之后，需要提交spec文件，每个组件都有自己的spec项目。spec文件里主要是描述bp的功能说明，解决了什么问题，使用场景，加了什么参数，具有什么影响，在什么版本发布等等内容。 与bug修复类似，首先需要创建bp对应的分支，一般都是使用bp的名称作为分支： 12git branch bp-cpu-qosgit checkout bp-cpu-qos 修改完代码之后进行提交 1git commit -am &quot;Support some function patch 1&quot; 此时，Gerrit会自动给该commit添加change-id。如果后续有修复，则需要使用--amend追加到之前的commit中。 1git commit --amend 上面的命令会打开文件编辑，在里面添加bp描述信息和bp的信息: 123456Support some function patch 1Description some detail for this commits.Implement: blueprint cpu-qosChange-id: Idxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx bp一般可以根据代码逻辑或者层次，提交多个commit，一般很多组件都有多个driver，所以可以以此作为提交依据，一个driver对应一个提交，这样的好处是review的时候逻辑会比较清晰。 修改之后没有问题了，可以进行提交： 1git review 至此向社区的代码提交就完成了，根据之前图上的流程可以看到，接下来就是等待其他贡献者的review了。如果reviewer提出问题需要及时回答，如果代码确实存在问题需要重新修改并提交。直到没有问题之后，core review会将code-review +2，此时review算是通过了。之后就是workflow，core会将workflow +1，然后没多久jenkins就会合并该代码。 需要注意的是，在修改代码的时候，要保证master与上游保持同步，并且及时rebase到当前分支中。这样就合并的时候就不会有问题。 贡献统计查看openstack使用stackalytics统计贡献情况，可以在这上面查看用户或者企业对某些组件的贡献情况。这也是官方比较权威的贡献数据查询入口。 那么如何让自己的贡献出现在这里的统计里呢？其实非常简单，只需要将自己的用户信息提交到stackalytics项目中即可。具体的提交流程与上面讲的一样。 clone项目 123git clone https://github.com/openstack/stackalytics.gitcd stackalyticsvi etc/default_data.json 添加自己的信息 123456789101112&#123; &quot;launchpad_id&quot;: &quot;youropenid&quot;, &quot;gerrit_id&quot;: &quot;yourgerritusername&quot;, &quot;companies&quot;: [ &#123; &quot;company_name&quot;: &quot;your company name&quot;, &quot;end_date&quot;: null &#125; ], &quot;user_name&quot;: &quot;your name&quot;, &quot;emails&quot;: [&quot;your email&quot;]&#125;, 这里需要注意，launchpad_id是要字典排序的，否则jenkins那里过不去。所以请先找到自己名字应该插入的地方。 等待该commit被合并之后，就可以在stackalytics上查到自己的名字了，这里是我的贡献查询。]]></content>
+      <categories>
+        <category>Openstack</category>
+      </categories>
+      <tags>
+        <tag>Openstack</tag>
+        <tag>Contribution</tag>
+        <tag>Gerrit</tag>
+      </tags>
+  </entry>
 </search>

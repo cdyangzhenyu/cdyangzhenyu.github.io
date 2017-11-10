@@ -4,6 +4,30 @@
 
     
   <url>
+    <loc>http://blog.aiven8.com/blog/2014-04-12-openstack-contribution/</loc>
+    <lastmod>2017-11-10T11:19:05.933Z</lastmod>
+    <data>
+        <display>
+        <title>openstack社区贡献方法</title>
+        <pubTime>2014-04-12T07:51:23.000Z</pubTime>
+        
+        <tag>Openstack</tag>
+         
+        <tag>Contribution</tag>
+         
+        <tag>Gerrit</tag>
+         
+         
+           
+             
+              <breadCrumb title="Openstack" url="http://blog.aiven8.com/categories/Openstack/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.aiven8.com/blog/2017-10-25-zaqar-dockerfile/</loc>
     <lastmod>2017-10-26T06:36:14.909Z</lastmod>
     <data>
