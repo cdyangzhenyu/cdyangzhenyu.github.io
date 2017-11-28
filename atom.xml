@@ -204,6 +204,32 @@
   </entry>
   
   <entry>
+    <title>openstack社区贡献简单技巧分享</title>
+    <link href="http://blog.aiven8.com/blog/2014-05-11-openstack-contribution-skill/"/>
+    <id>http://blog.aiven8.com/blog/2014-05-11-openstack-contribution-skill/</id>
+    <published>2014-05-11T10:51:23.000Z</published>
+    <updated>2017-11-28T06:12:37.633Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近做社区贡献，也慢慢熟悉了社区贡献的方法和技巧，这里就做一些简单的分享。本文主要分享社区贡献时代码提交需要注意的问题和Git的操作技巧。</p><a id="more"></a><p>在贡献社区时，一般一个Blueprints可能需要提交多个Commits来实现，但是有时候需要经常修改其中的某个Commits，这时候就需要使用Git的<code>rebase</code>功能。如</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git rebase -i HEAD~5</div></pre></td></tr></table></figure><p>该命令意思是从当前提交往前总共5个提交可能需要进行处理，之后进入提交的编辑页面，可以看到下面有帮助提示，这里需要注意的是，提交最上面的记录是最早的提交。</p><p>一般可以使用<code>e</code>来进行修改提交，需要修改哪个提交就把哪个的<code>pick</code>改为<code>e</code>。如果要删除某个提交就把其中的记录删掉。如果需要合并提交，则把需要合并到上一个提交的记录前面改为<code>s</code>或者<code>f</code>。</p><p>处理完了之后，就可以使用<code>--continue</code>完成<code>rebase</code>操作。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git rebase --continue</div></pre></td></tr></table></figure><p>有时候需要修改一些功能，这些功能可能是对应到多个commit的，但是为了方便，只在当前状态下进行修改，之后就需要将所有修改变动的文件提交到不同的commits里。这时候就需要用到<code>stash</code>。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git stash -u -k</div></pre></td></tr></table></figure><p>可以将当前所有未提交的内容都放在git的回收栈里。这时候就可以任意<code>checkout</code>到不同的分支等等。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git stash pop</div></pre></td></tr></table></figure><p>这样可以将放进去的文件从栈里退出来，并且删掉栈里的信息。</p><p>因此我们可以利用这个特点和<code>rebase</code>配合来分批进行提交到不同的<code>commits</code>。这里的原则是，先处理最近的提交，之后按提交顺序从后往前处理，否则就会出现冲突等问题。比如：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">git stash -u -k</div><div class="line">git rebase -i HEAD~2</div><div class="line">git stash pop</div><div class="line">git add xxx</div><div class="line">git commit --amend</div><div class="line">git stash -u -k</div><div class="line">git rebase --continue</div><div class="line"></div><div class="line">git rebase -i HEAD~3</div><div class="line">git stash pop</div><div class="line">git add xxx</div><div class="line">git commit --amend</div><div class="line">git stash -u -k</div><div class="line">git rebase --continue</div></pre></td></tr></table></figure><p>都处理完了之后就可以提交社区了</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git review</div></pre></td></tr></table></figure><p>这时候多个commits的改变会一次性提交，输入<code>yes</code>即可。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近做社区贡献，也慢慢熟悉了社区贡献的方法和技巧，这里就做一些简单的分享。本文主要分享社区贡献时代码提交需要注意的问题和Git的操作技巧。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="Openstack" scheme="http://blog.aiven8.com/categories/Openstack/"/>
+    
+    
+      <category term="Openstack" scheme="http://blog.aiven8.com/tags/Openstack/"/>
+    
+      <category term="Contribution" scheme="http://blog.aiven8.com/tags/Contribution/"/>
+    
+      <category term="Git" scheme="http://blog.aiven8.com/tags/Git/"/>
+    
+  </entry>
+  
+  <entry>
     <title>openstack社区贡献方法</title>
     <link href="http://blog.aiven8.com/blog/2014-04-12-openstack-contribution/"/>
     <id>http://blog.aiven8.com/blog/2014-04-12-openstack-contribution/</id>

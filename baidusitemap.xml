@@ -4,6 +4,30 @@
 
     
   <url>
+    <loc>http://blog.aiven8.com/blog/2014-05-11-openstack-contribution-skill/</loc>
+    <lastmod>2017-11-28T06:12:37.633Z</lastmod>
+    <data>
+        <display>
+        <title>openstack社区贡献简单技巧分享</title>
+        <pubTime>2014-05-11T10:51:23.000Z</pubTime>
+        
+        <tag>Openstack</tag>
+         
+        <tag>Contribution</tag>
+         
+        <tag>Git</tag>
+         
+         
+           
+             
+              <breadCrumb title="Openstack" url="http://blog.aiven8.com/categories/Openstack/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.aiven8.com/blog/2017-11-25-mariadb-exception/</loc>
     <lastmod>2017-11-28T04:18:09.536Z</lastmod>
     <data>

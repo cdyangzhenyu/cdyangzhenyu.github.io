@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.aiven8.com/blog/2014-05-11-openstack-contribution-skill/</loc>
+    
+    <lastmod>2017-11-28T06:12:37.633Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.aiven8.com/blog/2017-11-25-mariadb-exception/</loc>
     
     <lastmod>2017-11-28T04:18:09.536Z</lastmod>
