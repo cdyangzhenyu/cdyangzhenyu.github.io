@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.aiven8.com/"/>
-  <updated>2017-10-26T06:36:14.909Z</updated>
+  <updated>2017-11-28T04:18:09.536Z</updated>
   <id>http://blog.aiven8.com/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Mysql数据库异常</title>
+    <link href="http://blog.aiven8.com/blog/2017-11-25-mariadb-exception/"/>
+    <id>http://blog.aiven8.com/blog/2017-11-25-mariadb-exception/</id>
+    <published>2017-11-25T04:53:59.000Z</published>
+    <updated>2017-11-28T04:18:09.536Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>Rdo版本的Openstack的测试环境跑了一段时间，莫名奇妙服务不能正常运行，执行任何命令都没有响应，最后排查原因是Mysql挂了导致，查看日志有两种报错，接下来详细说明并附上解决方法。<br><a id="more"></a></p><h2 id="第一种报错日志"><a href="#第一种报错日志" class="headerlink" title="第一种报错日志"></a>第一种报错日志</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">2017-11-25 11:10:45 7f821fec2700 InnoDB: Error: Column last_update in table &quot;mysql&quot;.&quot;innodb_table_stats&quot; is INT UNSIGNED NOT NULL but should be BINARY(4) NOT NULL (type mismatch).</div><div class="line">2017-11-25 11:10:45 7f821fec2700 InnoDB: Error: Fetch of persistent statistics requested for table &quot;glance&quot;.&quot;image_properties&quot; but the required system tables mysql.innodb_table_stats and mysql.innodb_index_stats are not present or have unexpected structure. Using transient stats instead.</div></pre></td></tr></table></figure><p>查看了<code>mysql</code>库里的<code>innodb_table_stats</code>表，其中<code>last_update</code>字段是<code>timestamp</code>属性，很奇怪没有做过什么更新操作，为什么一个之前没问题的字段居然会报错。去Google了一圈，找到一个解决方法：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql_upgrade -u root -p</div></pre></td></tr></table></figure><p>等待更新成功之后，日志里再没有报这个错误。</p><h2 id="第二种日志报错"><a href="#第二种日志报错" class="headerlink" title="第二种日志报错"></a>第二种日志报错</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">2017-11-25 11:19:43 140214816065728 [ERROR] Error in accept: Bad file descriptor</div><div class="line">2017-11-25 11:19:43 140214816065728 [ERROR] Error in accept: Bad file descriptor</div></pre></td></tr></table></figure><p>这个错误比较严重，日志疯狂刷新，一会日志就有几个G了，而且Mysql直接卡死无法访问。所以前面说的无法访问Openstack服务，主要是因为这个报错。查看原因应该是打开的描述符过多导致。所以需要修改系统可打开的描述符上限。Centos7可<a href="https://ma.ttias.be/increase-open-files-limit-in-mariadb-on-centos-7-with-systemd/" target="_blank" rel="external">参考这里</a></p><p>解决步骤：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mkdir -p /etc/systemd/system/mariadb.service.d/</div></pre></td></tr></table></figure><p>添加限制文件，这里的大小可以根据自己的需要调整。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">cat /etc/systemd/system/mariadb.service.d/limits.conf</div><div class="line">[Service]</div><div class="line">LimitNOFILE=1000000</div></pre></td></tr></table></figure><p>重新加载</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl daemon-reload</div></pre></td></tr></table></figure><p>重启<code>mariadb</code>服务</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl restart mariadb</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;问题描述&quot;&gt;&lt;a href=&quot;#问题描述&quot; class=&quot;headerlink&quot; title=&quot;问题描述&quot;&gt;&lt;/a&gt;问题描述&lt;/h2&gt;&lt;p&gt;Rdo版本的Openstack的测试环境跑了一段时间，莫名奇妙服务不能正常运行，执行任何命令都没有响应，最后排查原因是Mysql挂了导致，查看日志有两种报错，接下来详细说明并附上解决方法。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="Mysql" scheme="http://blog.aiven8.com/categories/Mysql/"/>
+    
+    
+      <category term="Openstack" scheme="http://blog.aiven8.com/tags/Openstack/"/>
+    
+      <category term="Mariadb" scheme="http://blog.aiven8.com/tags/Mariadb/"/>
+    
+  </entry>
   
   <entry>
     <title>Zaqar docker镜像制作</title>

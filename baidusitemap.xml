@@ -4,6 +4,28 @@
 
     
   <url>
+    <loc>http://blog.aiven8.com/blog/2017-11-25-mariadb-exception/</loc>
+    <lastmod>2017-11-28T04:18:09.536Z</lastmod>
+    <data>
+        <display>
+        <title>Mysql数据库异常</title>
+        <pubTime>2017-11-25T04:53:59.000Z</pubTime>
+        
+        <tag>Openstack</tag>
+         
+        <tag>Mariadb</tag>
+         
+         
+           
+             
+              <breadCrumb title="Mysql" url="http://blog.aiven8.com/categories/Mysql/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.aiven8.com/blog/2014-04-12-openstack-contribution/</loc>
     <lastmod>2017-11-10T13:18:17.240Z</lastmod>
     <data>
