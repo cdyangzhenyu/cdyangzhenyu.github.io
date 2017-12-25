@@ -21,15 +21,22 @@
     </url>
 
     <url>
-        <loc>http://blog.aiven8.com/categories/Zaqar/</loc>
-        <lastmod>2017-10-26T06:36:14.909Z</lastmod>
+        <loc>http://blog.aiven8.com/categories/Mysql/</loc>
+        <lastmod>2017-11-28T04:18:09.536Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
         <loc>http://blog.aiven8.com/categories/Openstack/</loc>
-        <lastmod>2017-11-10T11:19:05.933Z</lastmod>
+        <lastmod>2017-11-28T06:12:37.633Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://blog.aiven8.com/categories/Zaqar/</loc>
+        <lastmod>2017-12-25T14:16:18.060Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>

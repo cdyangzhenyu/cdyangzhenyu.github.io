@@ -4,6 +4,28 @@
 
     
   <url>
+    <loc>http://blog.aiven8.com/blog/2017-11-20-zaqar-test/</loc>
+    <lastmod>2017-12-25T14:16:18.060Z</lastmod>
+    <data>
+        <display>
+        <title>zaqar性能测试</title>
+        <pubTime>2017-11-20T04:53:59.000Z</pubTime>
+        
+        <tag>Openstack</tag>
+         
+        <tag>Zaqar</tag>
+         
+         
+           
+             
+              <breadCrumb title="Zaqar" url="http://blog.aiven8.com/categories/Zaqar/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>http://blog.aiven8.com/blog/2014-05-11-openstack-contribution-skill/</loc>
     <lastmod>2017-11-28T06:12:37.633Z</lastmod>
     <data>

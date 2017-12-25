@@ -7,8 +7,32 @@
     </url>
 
     <url>
+        <loc>http://blog.aiven8.com/blog/2017-11-20-zaqar-test/</loc>
+        <lastmod>2017-12-25T14:16:18.060Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://blog.aiven8.com/blog/2014-05-11-openstack-contribution-skill/</loc>
+        <lastmod>2017-11-28T06:12:37.633Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://blog.aiven8.com/blog/2017-11-25-mariadb-exception/</loc>
+        <lastmod>2017-11-28T04:18:09.536Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://blog.aiven8.com/blog/2014-04-12-openstack-contribution/</loc>
-        <lastmod>2017-11-10T11:19:05.933Z</lastmod>
+        <lastmod>2017-11-10T13:18:17.240Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 

@@ -2,13 +2,6 @@
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     <url>
-        <loc>http://blog.aiven8.com/tags/Git/</loc>
-        <lastmod>2017-10-20T08:37:57.553Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://blog.aiven8.com/tags/SVN/</loc>
         <lastmod>2017-10-20T08:37:57.553Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -44,29 +37,43 @@
     </url>
 
     <url>
-        <loc>http://blog.aiven8.com/tags/Zaqar/</loc>
-        <lastmod>2017-10-26T06:36:14.909Z</lastmod>
+        <loc>http://blog.aiven8.com/tags/Gerrit/</loc>
+        <lastmod>2017-11-10T13:18:17.240Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
-        <loc>http://blog.aiven8.com/tags/Openstack/</loc>
-        <lastmod>2017-11-10T11:19:05.933Z</lastmod>
+        <loc>http://blog.aiven8.com/tags/Mariadb/</loc>
+        <lastmod>2017-11-28T04:18:09.536Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
         <loc>http://blog.aiven8.com/tags/Contribution/</loc>
-        <lastmod>2017-11-10T11:19:05.933Z</lastmod>
+        <lastmod>2017-11-28T06:12:37.633Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
-        <loc>http://blog.aiven8.com/tags/Gerrit/</loc>
-        <lastmod>2017-11-10T11:19:05.933Z</lastmod>
+        <loc>http://blog.aiven8.com/tags/Git/</loc>
+        <lastmod>2017-11-28T06:12:37.633Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://blog.aiven8.com/tags/Openstack/</loc>
+        <lastmod>2017-12-25T14:16:18.060Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://blog.aiven8.com/tags/Zaqar/</loc>
+        <lastmod>2017-12-25T14:16:18.060Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
